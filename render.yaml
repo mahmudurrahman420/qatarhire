@@ -14,15 +14,11 @@ services:
   - type: web
     name: qatarhire
     runtime: docker
-    plan: starter
+    plan: free
     region: frankfurt
     dockerfilePath: ./Dockerfile
     healthCheckPath: /health
     autoDeploy: true
-    disk:
-      name: qatarhire-data
-      mountPath: /var/data
-      sizeGB: 1
     envVars:
       - key: NODE_ENV
         value: production
