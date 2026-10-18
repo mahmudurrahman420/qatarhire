@@ -1,0 +1,12 @@
+node_modules
+build
+coverage
+.vscode
+.DS_Store
+.env
+tmp
+storage/private
+storage/public
+public/assets
+*.sqlite3
+storage/mail-previews

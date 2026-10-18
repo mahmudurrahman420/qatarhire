@@ -1,0 +1,11 @@
+node_modules
+build
+tmp
+.env
+storage/public
+storage/private
+storage/mail-previews
+public/assets
+*.sqlite3
+coverage
+.git

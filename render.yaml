@@ -1,0 +1,60 @@
+# Render Blueprint for QatarHire (demo / preview deployment with SQLite).
+# Render dashboard -> New -> Blueprint -> pick this repo.
+#
+# The Docker image (see Dockerfile + deploy/docker-entrypoint.sh) builds the app, then on every
+# start runs migrations, seeds reference data and (if SEED_DEMO=true) the fictional demo data,
+# and starts the server.
+#
+# Persistence: the SQLite db and uploads live on the disk mounted at /var/data. Disks need a
+# paid instance type (starter or higher). For a throw-away demo on the free plan, change
+# `plan: starter` to `plan: free` and delete the `disk:` block — data then resets on every
+# deploy/restart (the demo data is re-seeded automatically). For real production, switch to
+# MySQL (DB_CONNECTION=mysql + DB_* vars) and SMTP mail, and set SEED_DEMO=false.
+services:
+  - type: web
+    name: qatarhire
+    runtime: docker
+    plan: starter
+    region: frankfurt
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    autoDeploy: true
+    disk:
+      name: qatarhire-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: PORT
+        value: "3333"
+      - key: APP_KEY
+        generateValue: true
+      # Set to your public URL, e.g. https://qatarhire.onrender.com (used in email links, canonical URLs, sitemap)
+      - key: APP_URL
+        sync: false
+      - key: APP_NAME
+        value: QatarHire
+      - key: DB_CONNECTION
+        value: sqlite
+      - key: SESSION_DRIVER
+        value: database
+      - key: LIMITER_STORE
+        value: database
+      - key: QUEUE_DRIVER
+        value: sync
+      # "log" writes emails to storage/mail-previews instead of sending. Use smtp + SMTP_* for real email.
+      - key: MAIL_MAILER
+        value: log
+      - key: MAIL_FROM_ADDRESS
+        value: no-reply@qatarhire.local
+      - key: SUPPORT_EMAIL
+        value: support@qatarhire.local
+      - key: SEED_DEMO
+        value: "true"
+      - key: ADMIN_EMAIL
+        value: admin@qatarhire.example
+      - key: ADMIN_PASSWORD
+        sync: false

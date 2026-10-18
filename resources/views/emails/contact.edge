@@ -1,0 +1,5 @@
+@component('components/email_layout', { subject, appName, appUrl })
+  <p style="margin:0 0 6px;"><strong>From:</strong> {{ fromName }} &lt;{{ fromEmail }}&gt;</p>
+  <p style="margin:0 0 16px;"><strong>Topic:</strong> {{ topic }}</p>
+  <p style="margin:0;white-space:pre-line;">{{ message }}</p>
+@end
