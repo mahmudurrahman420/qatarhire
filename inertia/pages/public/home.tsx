@@ -3,7 +3,6 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { ArrowRight, Bell, Bookmark, BookmarkCheck, Briefcase, ChevronDown, ChevronRight, FileText, MapPin, Search, ShieldCheck, UserRound, Users } from 'lucide-react'
 import SiteLayout from '~/layouts/site_layout'
 import { TalentCard } from '~/components/talent'
-import { CompanyLogo } from '~/components/ui/misc'
 import { EmploymentType } from '#shared/enums'
 import { countryBySlug } from '#shared/gulf'
 import { ago, toQuery } from '~/lib/format'
@@ -312,8 +311,7 @@ function LatestJobs({ jobs, placeName, country }: { jobs: JobCard[]; placeName?:
             const Icon = isSaved ? BookmarkCheck : Bookmark
             return (
               <li key={j.id} className="rounded-[8px] border border-line p-2.5">
-                <div className="flex gap-3">
-                  {j.company && <CompanyLogo name={j.company.name} url={j.company.logoUrl} size={36} />}
+                <div className="flex">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-start justify-between gap-2">
                       <Link href={`/jobs/${j.slug}`} className="truncate text-sm font-semibold text-navy hover:text-brand-700">{j.title}</Link>
