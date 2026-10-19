@@ -14,7 +14,9 @@ export default class EmployerMiddleware {
     const user = ctx.auth.getUserOrFail()
     const membership = await membershipFor(user)
     if (!membership) {
-      return ctx.response.forbidden('No company is linked to this account.')
+      // e.g. an employer who signed up with Google and hasn't added a company yet
+      if (ctx.request.accepts(['html', 'json']) === 'json') return ctx.response.forbidden({ error: 'No company is linked to this account.' })
+      return ctx.response.redirect().toPath('/employer/setup')
     }
     if (options.ownerOnly && membership.role !== 'owner') {
       ctx.session.flash('error', 'Only the company owner can manage this.')

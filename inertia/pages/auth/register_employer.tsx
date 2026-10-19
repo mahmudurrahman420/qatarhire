@@ -2,10 +2,11 @@ import { Link, useForm } from '@inertiajs/react'
 import AuthLayout from '~/layouts/auth_layout'
 import { Button } from '~/components/ui/button'
 import { Checkbox, SelectField, TextField } from '~/components/ui/form'
+import { SocialButtons, type SocialProvider } from '~/components/social_buttons'
 
-type Props = { industries: { id: number; name: string }[]; locations: { id: number; name: string }[] }
+type Props = { industries: { id: number; name: string }[]; locations: { id: number; name: string }[]; socialProviders?: SocialProvider[] }
 
-export default function RegisterEmployer({ industries, locations }: Props) {
+export default function RegisterEmployer({ industries, locations, socialProviders = [] }: Props) {
   const form = useForm({
     fullName: '', email: '', password: '', passwordConfirmation: '',
     companyName: '', website: '', industryId: '', locationId: '', phone: '', crNumber: '', acceptTerms: false,
@@ -24,6 +25,12 @@ export default function RegisterEmployer({ industries, locations }: Props) {
       title="Register your company"
       subtitle="Your company starts as pending. Our team reviews it before it gets the verified mark and access to candidate search."
     >
+      {socialProviders.length > 0 && (
+        <div className="mb-6">
+          <p className="mb-3 text-sm text-slate">Sign up in one click, then add your company details on the next step.</p>
+          <SocialButtons providers={socialProviders} intent="employer" />
+        </div>
+      )}
       <form className="flex flex-col gap-6" onSubmit={(e) => { e.preventDefault(); submit() }}>
         <fieldset className="grid gap-4 sm:grid-cols-2">
           <legend className="mb-3 font-display text-lg">Company</legend>

@@ -3,6 +3,7 @@ import { DateTime } from 'luxon'
 import User from '#models/user'
 import { loginValidator } from '#validators/auth'
 import AuditLogger from '#services/audit_logger'
+import { enabledSocialProviders } from '#services/social_providers'
 
 export function homeFor(user: User) {
   if (user.isAdmin) return '/admin'
@@ -19,7 +20,22 @@ function safeRedirect(target: unknown) {
 
 export default class SessionController {
   async show({ inertia, request }: HttpContext) {
-    return inertia.render('auth/login', { redirect: safeRedirect(request.input('redirect')) })
+    return inertia.render('auth/login', {
+      redirect: safeRedirect(request.input('redirect')),
+      portal: 'user',
+      socialProviders: enabledSocialProviders(),
+    })
+  }
+
+  /** GET /admin/login: the same sign-in form, admin accounts only, password only (no social sign-in). */
+  async showAdmin({ inertia, auth, response, session }: HttpContext) {
+    if (await auth.use('web').check()) {
+      const user = auth.use('web').user!
+      if (user.isAdmin) return response.redirect().toPath('/admin')
+      session.flash('error', "This account doesn't have administrator access.")
+      return response.redirect().toPath(homeFor(user))
+    }
+    return inertia.render('auth/login', { redirect: '/admin', portal: 'admin', socialProviders: [] })
   }
 
   async store(ctx: HttpContext) {
@@ -38,13 +54,22 @@ export default class SessionController {
       session.flashErrors({ email: 'This account is suspended. Please contact support.' })
       return response.redirect().back()
     }
+    if (request.input('portal') === 'admin' && !user.isAdmin) {
+      await AuditLogger.log('auth.admin_login_denied', { ctx, actorId: null, meta: { userId: user.id } })
+      session.flashErrors({ email: "This account doesn't have administrator access." })
+      session.flashExcept(['password'])
+      return response.redirect().back()
+    }
     // rotate the session id on privilege change to prevent fixation
     session.regenerate()
     await auth.use('web').login(user)
     user.lastLoginAt = DateTime.now()
     await user.save()
     await AuditLogger.log('auth.login', { ctx, actorId: user.id })
-    return response.redirect().toPath(safeRedirect(request.input('redirect')) ?? homeFor(user))
+    let target = safeRedirect(request.input('redirect'))
+    // never bounce a non-admin into the admin area after sign-in
+    if (target && /^\/admin(\/|$|\?)/.test(target) && !user.isAdmin) target = null
+    return response.redirect().toPath(target ?? homeFor(user))
   }
 
   async destroy({ auth, response, session }: HttpContext) {

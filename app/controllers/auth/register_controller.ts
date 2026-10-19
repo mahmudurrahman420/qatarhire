@@ -1,21 +1,19 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import db from '@adonisjs/lucid/services/db'
-import string from '@adonisjs/core/helpers/string'
 import User from '#models/user'
-import Company from '#models/company'
-import CompanyUser from '#models/company_user'
 import CandidateProfile from '#models/candidate_profile'
-import CompanyVerification from '#models/company_verification'
 import Industry from '#models/industry'
 import Location from '#models/location'
 import { candidateRegisterValidator, employerRegisterValidator } from '#validators/auth'
 import EmailVerification from '#services/email_verification'
 import AuditLogger from '#services/audit_logger'
 import SettingsService from '#services/settings_service'
+import { createCompanyFor } from '#services/company_setup'
+import { enabledSocialProviders } from '#services/social_providers'
 
 export default class RegisterController {
   async showCandidate({ inertia }: HttpContext) {
-    return inertia.render('auth/register_candidate')
+    return inertia.render('auth/register_candidate', { socialProviders: enabledSocialProviders() })
   }
 
   async storeCandidate(ctx: HttpContext) {
@@ -43,6 +41,7 @@ export default class RegisterController {
       return response.redirect().toPath('/contact')
     }
     return inertia.render('auth/register_employer', {
+      socialProviders: enabledSocialProviders(),
       industries: await Industry.query().where('is_active', true).orderBy('sort_order').select('id', 'name'),
       locations: (await Location.query().where('kind', 'city').where('is_active', true).orderBy('country_code').orderBy('sort_order')).map((l) => ({ id: l.id, name: l.displayName })),
     })
@@ -59,26 +58,7 @@ export default class RegisterController {
     }
     const user = await db.transaction(async (trx) => {
       const u = await User.create({ fullName: data.fullName, email: data.email, password: data.password, role: 'employer', status: 'active' }, { client: trx })
-      let slug = string.slug(data.companyName, { lower: true, strict: true }).slice(0, 170) || 'company'
-      for (let n = 2; await Company.query({ client: trx }).where('slug', slug).first(); n++) slug = `${slug.replace(/-\d+$/, '')}-${n}`
-      const company = await Company.create(
-        {
-          name: data.companyName,
-          slug,
-          website: data.website ?? null,
-          industryId: data.industryId ?? null,
-          locationId: data.locationId ?? null,
-          contactName: data.fullName,
-          contactEmail: data.email,
-          phone: data.phone ?? null,
-          crNumber: data.crNumber ?? null,
-          // Never auto-verified: an administrator must review the company.
-          verificationStatus: 'pending',
-        },
-        { client: trx }
-      )
-      await CompanyUser.create({ companyId: company.id, userId: u.id, role: 'owner' }, { client: trx })
-      await CompanyVerification.create({ companyId: company.id, fromStatus: null, toStatus: 'pending', note: 'Company registered' }, { client: trx })
+      await createCompanyFor(u, data, { name: data.fullName, email: data.email }, trx)
       return u
     })
     await EmailVerification.send(user)

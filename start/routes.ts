@@ -14,6 +14,7 @@ import {
   candidateSearchThrottle,
   cvDownloadThrottle,
   loginThrottle,
+  socialAuthThrottle,
   publicFormThrottle,
 } from '#start/limiter'
 
@@ -27,6 +28,8 @@ const SeoController = () => import('#controllers/public/seo_controller')
 const ReportsController = () => import('#controllers/public/reports_controller')
 
 const RegisterController = () => import('#controllers/auth/register_controller')
+const SocialController = () => import('#controllers/auth/social_controller')
+const CompanySetupController = () => import('#controllers/employer/company_setup_controller')
 const SessionController = () => import('#controllers/auth/session_controller')
 const EmailVerificationController = () => import('#controllers/auth/email_verification_controller')
 const PasswordResetController = () => import('#controllers/auth/password_reset_controller')
@@ -89,6 +92,8 @@ router
     router.post('/employers/register', [RegisterController, 'storeEmployer']).use(authEmailThrottle)
     router.get('/login', [SessionController, 'show'])
     router.post('/login', [SessionController, 'store']).use(loginThrottle)
+    router.get('/auth/:provider/redirect', [SocialController, 'redirect']).where('provider', /^(google|linkedin|facebook)$/).use(socialAuthThrottle)
+    router.get('/auth/:provider/callback', [SocialController, 'callback']).where('provider', /^(google|linkedin|facebook)$/).use(socialAuthThrottle)
     router.get('/forgot-password', [PasswordResetController, 'showForgot'])
     router.post('/forgot-password', [PasswordResetController, 'sendLink']).use(authEmailThrottle)
     router.get('/reset-password/:token', [PasswordResetController, 'showReset'])
@@ -159,6 +164,15 @@ router
   .use([middleware.auth(), middleware.role({ roles: ['candidate'] }), middleware.verified(), middleware.candidate()])
 
 /* ---------------------------------------------------------------- employers */
+// first-time company details for employers who signed up without one (e.g. via Google)
+router
+  .group(() => {
+    router.get('/setup', [CompanySetupController, 'show'])
+    router.post('/setup', [CompanySetupController, 'store'])
+  })
+  .prefix('/employer')
+  .use([middleware.auth(), middleware.role({ roles: ['employer'] }), middleware.verified()])
+
 router
   .group(() => {
     router.get('/', [EmployerDashboard, 'index'])
@@ -202,6 +216,9 @@ router
   .use([middleware.auth(), middleware.role({ roles: ['employer'] }), middleware.verified(), middleware.employer({ ownerOnly: true })])
 
 /* ---------------------------------------------------------------- administrators */
+// dedicated admin sign-in: same form, admin accounts only (handles already-signed-in users itself)
+router.get('/admin/login', [SessionController, 'showAdmin'])
+
 router
   .group(() => {
     router.get('/', [AdminDashboard, 'index'])

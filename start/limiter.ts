@@ -11,6 +11,11 @@ export const loginThrottle = limiter.define('login', (ctx) =>
   limiter.allowRequests(10).every('15 minutes').blockFor('15 minutes').usingKey(`login_${ctx.request.ip()}`)
 )
 
+/** Social sign-in redirects + callbacks: 30 / 15 min per IP. */
+export const socialAuthThrottle = limiter.define('social_auth', (ctx) =>
+  limiter.allowRequests(30).every('15 minutes').usingKey(`social_${ctx.request.ip()}`)
+)
+
 /** Registration, password reset and verification emails. */
 export const authEmailThrottle = limiter.define('auth_email', (ctx) =>
   limiter.allowRequests(5).every('15 minutes').usingKey(`authmail_${ctx.request.ip()}`)

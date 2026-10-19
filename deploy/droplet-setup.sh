@@ -44,7 +44,7 @@ ENV
   chmod 600 "$ENVF"
   echo "Created $ENVF"
 else
-  # Rerun: keep APP_KEY, admin and other settings; only refresh branding.
+  # Rerun: keep APP_KEY, admin, GOOGLE_*/LINKEDIN_*/FACEBOOK_* and every other line; only refresh branding.
   echo "Keeping existing $ENVF (APP_KEY unchanged)"
   sed -i 's/^APP_NAME=.*/APP_NAME=HireMeGulf/' "$ENVF"
   grep -q '^MAIL_FROM_NAME=' "$ENVF" && sed -i 's/^MAIL_FROM_NAME=.*/MAIL_FROM_NAME=HireMeGulf/' "$ENVF" || echo 'MAIL_FROM_NAME=HireMeGulf' >> "$ENVF"

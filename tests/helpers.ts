@@ -25,7 +25,7 @@ export async function resetData() {
     'application_notes', 'application_status_histories', 'applications', 'saved_jobs', 'saved_candidates', 'saved_searches',
     'candidate_access_logs', 'job_skills', 'jobs', 'candidate_cvs', 'candidate_skills', 'candidate_languages', 'candidate_certifications',
     'candidate_educations', 'candidate_experiences', 'candidate_profiles', 'company_verifications', 'company_users', 'companies',
-    'reports', 'audit_logs', 'notifications', 'user_tokens', 'users', 'platform_settings', 'queued_jobs',
+    'reports', 'audit_logs', 'notifications', 'user_tokens', 'social_accounts', 'users', 'platform_settings', 'queued_jobs',
   ]
   for (const t of tables) await db.from(t).delete()
   SettingsService.clearCache()

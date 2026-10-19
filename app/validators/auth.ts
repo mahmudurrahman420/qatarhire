@@ -26,6 +26,18 @@ export const employerRegisterValidator = vine.compile(
   })
 )
 
+export const companySetupValidator = vine.compile(
+  vine.object({
+    companyName: vine.string().trim().minLength(2).maxLength(160),
+    website: vine.string().trim().url({ require_protocol: true }).maxLength(255).optional(),
+    industryId: vine.number().positive().optional(),
+    locationId: vine.number().positive().optional(),
+    phone: vine.string().trim().maxLength(30).regex(/^[+\d\s()-]{6,30}$/).optional(),
+    crNumber: vine.string().trim().maxLength(40).optional(),
+    acceptTerms: vine.accepted(),
+  })
+)
+
 export const loginValidator = vine.compile(
   vine.object({
     email: vine.string().trim().email().normalizeEmail(),

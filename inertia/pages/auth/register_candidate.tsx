@@ -2,14 +2,16 @@ import { Link, useForm } from '@inertiajs/react'
 import AuthLayout from '~/layouts/auth_layout'
 import { Button } from '~/components/ui/button'
 import { Checkbox, TextField } from '~/components/ui/form'
+import { SocialButtons, type SocialProvider } from '~/components/social_buttons'
 
-export default function RegisterCandidate() {
+export default function RegisterCandidate({ socialProviders = [] }: { socialProviders?: SocialProvider[] }) {
   const form = useForm({ fullName: '', email: '', password: '', passwordConfirmation: '', acceptTerms: false })
   return (
     <AuthLayout
       title="Create your job seeker profile"
       subtitle={<>Free, and private until you choose otherwise. Hiring? <Link href="/employers/register" className="text-brand-700 hover:underline">Register a company instead</Link>.</>}
     >
+      <div className="mb-5"><SocialButtons providers={socialProviders} intent="candidate" /></div>
       <form className="flex flex-col gap-4" onSubmit={(e) => { e.preventDefault(); form.post('/register', { onFinish: () => form.reset('password', 'passwordConfirmation') }) }}>
         <TextField label="Full name" autoComplete="name" value={form.data.fullName} onChange={(e) => form.setData('fullName', e.target.value)} error={form.errors.fullName} required />
         <TextField label="Email" type="email" autoComplete="email" value={form.data.email} onChange={(e) => form.setData('email', e.target.value)} error={form.errors.email} required hint="We'll send a link to confirm it." />
