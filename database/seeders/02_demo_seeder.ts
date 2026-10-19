@@ -21,7 +21,7 @@ import JobCategory from '#models/job_category'
 import Application from '#models/application'
 import ApplicationStatusHistory from '#models/application_status_history'
 import { refreshCompleteness } from '#services/profile_completeness'
-import { currencyFor } from '#shared/gulf'
+import { countryByCode, currencyFor } from '#shared/gulf'
 
 /**
  * DEVELOPMENT / DEMO DATA ONLY. Fictional companies and people.
@@ -196,6 +196,8 @@ export default class extends BaseSeeder {
         await drive.use('private').put(key, pdf)
         await CandidateCv.create({ candidateProfileId: profile.id, label: `${c.position} CV`, storageKey: key, originalName: `${c.name.replace(/\s+/g, '-')}-CV.pdf`, mimeType: 'application/pdf', sizeBytes: pdf.length, isPrimary: true, scanStatus: 'not_scanned' })
       }
+      const rich = richProfiles[c.email]
+      if (rich) await applyRichProfile(profile, rich)
       // keep the seeded "updated" dates rather than now()
       await refreshCompleteness(profile)
       await CandidateProfile.query().where('id', profile.id).update({ profile_updated_at: DateTime.now().minus({ days: c.daysAgo, hours: i }).toSQL({ includeOffset: false }) })
@@ -219,5 +221,77 @@ export default class extends BaseSeeder {
         prev = st
       }
     }
+  }
+}
+
+/* ------------------------------------------------------------------ full profiles for a few demo candidates */
+
+type Rich = {
+  employment: 'employed' | 'unemployed'; career: string; gcc: boolean; licence: boolean; notice: string; types: string[]; salaryRange: string
+  benefits: string[]; functions: string[]; industries: string[]; prefPositions: string[]; prefCities: string[]; whatsapp?: boolean
+  linkedin?: string; about: string
+  education: { qualification: string; major: string; institution: string; custom?: boolean; start: string; end: string }[]
+  jobs: { title: string; company: string; type: string; location: string; start: string; end?: string; about: string }[]
+}
+
+const richProfiles: Record<string, Rich> = {
+  'aisha@candidate.example': {
+    employment: 'employed', career: 'senior', gcc: true, licence: true, notice: '1_month', types: ['full_time', 'contract'], salaryRange: '10000-15000',
+    benefits: ['housing', 'transportation', 'medical', 'air_ticket', 'end_of_service'], functions: ['accounting-and-finance'], industries: ['banking-and-financial-services', 'consulting-and-professional-services'],
+    prefPositions: ['Senior Accountant', 'Finance Manager', 'VAT Specialist'], prefCities: ['dubai', 'abu-dhabi'], whatsapp: true,
+    linkedin: 'https://www.linkedin.com/in/aisha-khan-demo/',
+    about: '<p>I am a <b>chartered accountant</b> with five years of experience in the UAE, focused on VAT compliance, month-end close and management reporting.</p><ul><li>Cut month-end close from 10 to 6 working days</li><li>Led two FTA VAT audits with no penalties</li><li>Built Power BI dashboards for the CFO</li></ul><p>I am looking for a senior accounting or finance manager role in Dubai or Abu Dhabi.</p>',
+    education: [
+      { qualification: "Bachelor's Degree", major: 'Accounting', institution: 'University of the Punjab', start: '2014-09-01', end: '2018-06-30' },
+      { qualification: 'Postgraduate Diploma', major: 'Banking & Finance', institution: 'Heriot-Watt University Dubai', start: '2019-09-01', end: '2020-06-30' },
+    ],
+    jobs: [
+      { title: 'Senior Accountant', company: 'Crescent Trading', type: 'full_time', location: 'Dubai, UAE', start: '2022-03-01', about: '<ul><li>Own VAT returns and FTA correspondence for three entities</li><li>Lead month-end close and intercompany reconciliations</li></ul>' },
+      { title: 'Accountant', company: 'Al Noor Auditing', type: 'full_time', location: 'Sharjah, UAE', start: '2019-01-01', end: '2022-02-28', about: '<p>Statutory audits and bookkeeping for SME clients in retail and logistics.</p>' },
+    ],
+  },
+  'ahmed@candidate.example': {
+    employment: 'employed', career: 'mid', gcc: true, licence: true, notice: '2_months', types: ['full_time'], salaryRange: '10000-15000',
+    benefits: ['housing', 'transportation', 'medical', 'end_of_service'], functions: ['engineering', 'project-management'], industries: ['construction-and-engineering'],
+    prefPositions: ['Civil Engineer', 'Site Engineer'], prefCities: ['abu-dhabi', 'dubai'],
+    about: '<p>Civil engineer with six years on high-rise and road projects in Abu Dhabi. Comfortable leading subcontractors, preparing method statements and coordinating with consultants.</p><p><b>Looking for:</b> a senior site engineer role on a major project.</p>',
+    education: [{ qualification: "Bachelor's Degree", major: 'Civil Engineering', institution: 'Cairo University', start: '2014-09-01', end: '2019-06-30' }],
+    jobs: [
+      { title: 'Site Engineer', company: 'Horizon Projects', type: 'full_time', location: 'Abu Dhabi, UAE', start: '2021-05-01', about: '<ul><li>Supervise structure works on a 32-floor residential tower</li><li>Prepare daily progress reports and look-ahead schedules</li></ul>' },
+      { title: 'Junior Civil Engineer', company: 'Delta Roads Contracting', type: 'contract', location: 'Cairo, Egypt', start: '2019-08-01', end: '2021-04-30', about: '<p>Road and drainage works, quantity take-off and site testing.</p>' },
+    ],
+  },
+  'mohammed@candidate.example': {
+    employment: 'unemployed', career: 'mid', gcc: true, licence: false, notice: 'immediate', types: ['full_time', 'temporary'], salaryRange: '4000-5000',
+    benefits: ['housing', 'transportation', 'food', 'medical'], functions: ['skilled-trades-and-technicians'], industries: ['facilities-management'],
+    prefPositions: ['HVAC Technician', 'Maintenance Technician'], prefCities: ['doha', 'lusail'], whatsapp: true,
+    about: '<p>HVAC technician with seven years maintaining commercial chillers, AHUs and VRF systems in Doha. Available to join immediately with a transferable visa.</p>',
+    education: [{ qualification: 'Diploma', major: 'Mechanical Engineering', institution: 'Government Polytechnic, Lucknow', custom: true, start: '2013-07-01', end: '2016-05-31' }],
+    jobs: [{ title: 'HVAC Technician', company: 'Pearl Facilities Services', type: 'full_time', location: 'Doha, Qatar', start: '2018-02-01', end: '2026-08-31', about: '<ul><li>Preventive maintenance on 40+ chillers and AHUs</li><li>Fault finding on VRF and split systems</li></ul>' }],
+  },
+}
+
+async function applyRichProfile(profile: CandidateProfile, r: Rich) {
+  const industries = await Industry.query().whereIn('slug', [...r.industries])
+  const functions = await JobCategory.query().whereIn('slug', r.functions)
+  const cities = await Location.query().whereIn('slug', r.prefCities).where('kind', 'city')
+  const country = cities[0] ? await Location.findBy('slug', countryByCode(cities[0].countryCode)?.slug ?? '') : null
+  profile.merge({
+    employmentStatus: r.employment, careerLevel: r.career, hasGccExperience: r.gcc, hasDrivingLicence: r.licence, hasDisability: false,
+    noticePeriod: r.notice, desiredEmploymentTypes: r.types, currentSalaryRange: r.salaryRange, currentSalaryCurrency: country ? currencyFor(country.countryCode) : 'QAR',
+    benefits: r.benefits, industryIds: industries.map((i) => i.id), functionIds: functions.map((f) => f.id), preferredPositions: r.prefPositions,
+    preferredIndustryIds: industries.map((i) => i.id), preferredCityIds: cities.map((c) => c.id), preferredLocationId: country?.id ?? profile.preferredLocationId,
+    whatsapp: r.whatsapp ? profile.phone : null, linkedinUrl: r.linkedin ?? null, summary: r.about, openToRelocation: true,
+  })
+  await profile.save()
+  await CandidateEducation.query().where('candidate_profile_id', profile.id).delete()
+  await CandidateExperience.query().where('candidate_profile_id', profile.id).delete()
+  for (const e of r.education) {
+    const start = DateTime.fromISO(e.start)
+    const end = DateTime.fromISO(e.end)
+    await CandidateEducation.create({ candidateProfileId: profile.id, qualification: e.qualification, fieldOfStudy: e.major, institution: e.institution, isCustomInstitute: Boolean(e.custom), startDate: start, endDate: end, startYear: start.year, endYear: end.year })
+  }
+  for (const j of r.jobs) {
+    await CandidateExperience.create({ candidateProfileId: profile.id, jobTitle: j.title, companyName: j.company, employmentType: j.type, location: j.location, startDate: DateTime.fromISO(j.start), endDate: j.end ? DateTime.fromISO(j.end) : null, isCurrent: !j.end, description: j.about })
   }
 }

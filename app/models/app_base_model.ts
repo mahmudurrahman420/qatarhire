@@ -28,3 +28,20 @@ export default class AppBaseModel extends BaseModel {
 
 /** MySQL (TINYINT) and SQLite return booleans as 0/1; normalise them. */
 export const toBool = (v: unknown) => (v === null || v === undefined ? v : Boolean(v))
+
+/** JSON array stored in a TEXT column (SQLite) or JSON column (MySQL). Always an array in code. */
+export function jsonArray<T>() {
+  return {
+    prepare: (v: T[] | null | undefined) => JSON.stringify(Array.isArray(v) ? v : []),
+    consume: (v: unknown): T[] => {
+      if (Array.isArray(v)) return v as T[]
+      if (typeof v !== 'string' || !v) return []
+      try {
+        const parsed = JSON.parse(v)
+        return Array.isArray(parsed) ? parsed : []
+      } catch {
+        return []
+      }
+    },
+  }
+}

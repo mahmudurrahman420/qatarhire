@@ -96,7 +96,7 @@ export default class ApplicantsController {
         notes: application.notes.map((n) => ({ id: n.id, body: n.body, author: n.author?.fullName ?? 'Former team member', createdAt: n.createdAt.toISO() })),
       },
       job: { id: application.job.id, title: application.job.title },
-      candidate: access.canView ? candidateDetail(profile, access) : null,
+      candidate: access.canView ? await candidateDetail(profile, access, { forEmployer: true }) : null,
     })
   }
 

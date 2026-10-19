@@ -68,7 +68,7 @@ export default class CandidatesController {
 
     const saved = await SavedCandidate.query().where('company_id', company.id).where('candidate_profile_id', profile.id)
     return inertia.render('employer/candidates/show', {
-      candidate: candidateDetail(profile, access),
+      candidate: await candidateDetail(profile, access, { forEmployer: true }),
       applied: access.applied,
       saved: saved.map((s) => ({ id: s.id, listName: s.listName, note: s.note })),
     })

@@ -30,6 +30,9 @@ export default class CandidateExperience extends AppBaseModel {
   @column()
   declare description: string | null
 
+  @column()
+  declare employmentType: string | null
+
   @column.dateTime({ autoCreate: true, serializeAs: null })
   declare createdAt: DateTime
 

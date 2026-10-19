@@ -51,7 +51,7 @@ export default class TalentController {
     )
     if (membership && access.canView) await CandidateAccess.logAccess(ctx, user!, membership.company, profile.id, 'profile_view')
 
-    const detail = candidateDetail(profile, access)
+    const detail = await candidateDetail(profile, access, { forEmployer: Boolean(membership && access.canView) })
     const cvUrl = publicCvUrl(profile)
     const saved = membership ? await SavedCandidate.query().where('company_id', membership.companyId).where('candidate_profile_id', profile.id) : []
     return inertia.render('public/talent/show', {

@@ -110,6 +110,11 @@ export default class extends BaseSeeder {
       'Food Safety', 'HACCP', 'Front Office', 'Housekeeping', 'Barista', 'Culinary Arts', 'Event Management',
       'Heavy Vehicle Driving', 'Light Vehicle Driving', 'Forklift Operation', 'Welding', 'Electrical Maintenance', 'Plumbing', 'Carpentry',
       'Security Operations', 'CCTV Monitoring', 'Legal Drafting', 'Corporate Law', 'Compliance', 'Anti-Money Laundering',
+      // added with the full jobseeker profile
+      'Cooking', 'Food Preparation', 'Kitchen Organisation', 'Menu Planning', 'Stocking', 'Serving', 'Cashier', 'Bartending',
+      'Cleaning', 'Driving', 'Time Management', 'Communication', 'Problem Solving', 'Microsoft Office', 'Tally', 'QuickBooks',
+      'Reception', 'Hotel Operations', 'Visual Merchandising', 'Interior Fit-out', 'Steel Fixing', 'Scaffolding', 'Painting',
+      'Tiling', 'Masonry', 'Electrician', 'Plumbing & Drainage', 'Generator Maintenance', 'Elevator Maintenance',
     ]
     for (const name of skills) {
       await Skill.updateOrCreate({ name }, { name, slug: skillSlug(name), isApproved: true })
@@ -119,6 +124,8 @@ export default class extends BaseSeeder {
       ['English', 'en'], ['Arabic', 'ar'], ['Hindi', 'hi'], ['Urdu', 'ur'], ['Malayalam', 'ml'], ['Tagalog / Filipino', 'tl'],
       ['Bengali', 'bn'], ['Nepali', 'ne'], ['Tamil', 'ta'], ['Sinhala', 'si'], ['French', 'fr'], ['Spanish', 'es'],
       ['German', 'de'], ['Mandarin Chinese', 'zh'], ['Russian', 'ru'], ['Turkish', 'tr'], ['Persian', 'fa'], ['Swahili', 'sw'],
+      ['Pashto', 'ps'], ['Punjabi', 'pa'], ['Telugu', 'te'], ['Kannada', 'kn'], ['Marathi', 'mr'], ['Gujarati', 'gu'],
+      ['Indonesian', 'id'], ['Amharic', 'am'], ['Somali', 'so'], ['Portuguese', 'pt'], ['Italian', 'it'], ['Japanese', 'ja'], ['Korean', 'ko'],
     ]
     for (const [name, code] of languages) {
       await Language.updateOrCreate({ code }, { name, code })

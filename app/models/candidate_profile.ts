@@ -1,7 +1,7 @@
 import { DateTime } from 'luxon'
 import { column, belongsTo, hasMany, manyToMany, beforeSave } from '@adonisjs/lucid/orm'
 import type { BelongsTo, HasMany, ManyToMany } from '@adonisjs/lucid/types/relations'
-import AppBaseModel, { toBool } from '#models/app_base_model'
+import AppBaseModel, { toBool, jsonArray } from '#models/app_base_model'
 import User from '#models/user'
 import Location from '#models/location'
 import Industry from '#models/industry'
@@ -96,6 +96,62 @@ export default class CandidateProfile extends AppBaseModel {
   @column({ consume: toBool })
   declare openToRelocation: boolean
 
+  // --- full profile (migration 0021) ------------------------------------------
+  @column({ consume: toBool })
+  declare hasDrivingLicence: boolean | null
+
+  // Sensitive: never serialised automatically; presenters expose it to employers only.
+  @column({ consume: toBool, serializeAs: null })
+  declare hasDisability: boolean | null
+
+  @column()
+  declare employmentStatus: 'employed' | 'unemployed' | null
+
+  @column()
+  declare careerLevel: string | null
+
+  @column({ consume: toBool })
+  declare hasGccExperience: boolean | null
+
+  @column()
+  declare noticePeriod: string | null
+
+  @column({ serializeAs: null })
+  declare currentSalaryRange: string | null
+
+  @column({ serializeAs: null })
+  declare currentSalaryCurrency: string | null
+
+  @column({ serializeAs: null })
+  declare whatsapp: string | null
+
+  @column({ serializeAs: null })
+  declare instagramUrl: string | null
+
+  @column({ serializeAs: null })
+  declare facebookUrl: string | null
+
+  @column(jsonArray<number>())
+  declare industryIds: number[]
+
+  @column(jsonArray<number>())
+  declare functionIds: number[]
+
+  @column(jsonArray<string>())
+  declare desiredEmploymentTypes: string[]
+
+  @column(jsonArray<string>())
+  declare benefits: string[]
+
+  @column(jsonArray<string>())
+  declare preferredPositions: string[]
+
+  @column(jsonArray<number>())
+  declare preferredIndustryIds: number[]
+
+  @column(jsonArray<number>())
+  declare preferredCityIds: number[]
+
   @column()
   declare visibility: ProfileVisibilityValue
 
@@ -168,6 +224,20 @@ export default class CandidateProfile extends AppBaseModel {
   /** Visible to everyone, signed in or not. */
   get isPublic() {
     return this.visibility === 'public'
+  }
+
+  /** Fields hidden from serialize(); only the owner (edit page, data export) gets all of them. */
+  get privateFields() {
+    return {
+      phone: this.phone,
+      contactEmail: this.contactEmail,
+      whatsapp: this.whatsapp,
+      hasDisability: this.hasDisability,
+      currentSalaryRange: this.currentSalaryRange,
+      currentSalaryCurrency: this.currentSalaryCurrency,
+      instagramUrl: this.instagramUrl,
+      facebookUrl: this.facebookUrl,
+    }
   }
 
   get photoUrl() {

@@ -55,7 +55,7 @@ export default class PrivacyController {
     const payload = {
       exportedAt: new Date().toISOString(),
       account: { fullName: user.fullName, email: user.email, createdAt: user.createdAt.toISO(), emailVerifiedAt: user.emailVerifiedAt?.toISO() },
-      profile: { ...profile.serialize(), phone: profile.phone, contactEmail: profile.contactEmail },
+      profile: { ...profile.serialize(), ...profile.privateFields },
       applications: applications.map((a) => ({
         job: a.job.title,
         company: a.job.company.name,

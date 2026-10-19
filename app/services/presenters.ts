@@ -3,6 +3,9 @@ import type Company from '#models/company'
 import type CandidateProfile from '#models/candidate_profile'
 import type CandidateCv from '#models/candidate_cv'
 import { EducationLevel } from '#shared/enums'
+import Taxonomy from '#services/taxonomy'
+import { Benefit, CareerLevel, DesiredEmploymentType, NoticePeriod, salaryRangeLabel } from '#shared/profile_options'
+import { toSafeHtml } from '#shared/rich_text'
 
 /**
  * Presenters decide exactly which fields leave the server for each view.
@@ -127,25 +130,56 @@ export function cvBrief(cv: CandidateCv) {
   }
 }
 
-/** Full profile for an authorised employer. Contact and CVs only when permitted. */
-export function candidateDetail(p: CandidateProfile, access: { canSeeContact: boolean; cvIds: number[] }) {
+/**
+ * Full profile for the profile page. Contact details, social links and CVs only when
+ * consent allows; current salary and disability only for employers.
+ */
+export async function candidateDetail(p: CandidateProfile, access: { canSeeContact: boolean; cvIds: number[] }, opts: { forEmployer?: boolean } = {}) {
+  const tax = await Taxonomy.all()
+  const industryName = new Map(tax.industries.map((i) => [i.id, i.name]))
+  const categoryName = new Map(tax.categories.map((c) => [c.id, c.name]))
+  const cityName = new Map(tax.locations.flatMap((c) => c.cities.map((city) => [city.id, city.name] as const)))
+  const names = (ids: number[], map: Map<number, string>) => ids.map((id) => map.get(id)).filter((v): v is string => Boolean(v))
+  const industryIds = p.industryIds?.length ? p.industryIds : p.industryId ? [p.industryId] : []
+  const employer = Boolean(opts.forEmployer)
   return {
     ...candidateCard(p),
     fullName: access.canSeeContact || p.isPublic ? p.user.fullName : displayName(p.user.fullName),
     summary: p.summary,
+    summaryHtml: toSafeHtml(p.summary),
     expectedSalary: p.expectedSalary,
     expectedSalaryCurrency: p.expectedSalaryCurrency,
     noticePeriodDays: p.noticePeriodDays,
+    noticePeriod: p.noticePeriod ? NoticePeriod.label(p.noticePeriod) : null,
     workAuthorization: p.workAuthorization,
     openToRelocation: p.openToRelocation,
     educationLevel: p.educationLevel,
-    linkedinUrl: p.linkedinUrl,
-    portfolioUrl: p.portfolioUrl,
-    experiences: (p.experiences ?? []).map((e) => e.serialize()),
-    educations: (p.educations ?? []).map((e) => e.serialize()),
+    employmentStatus: p.employmentStatus ? (p.employmentStatus === 'employed' ? 'Currently employed' : 'Currently not employed') : null,
+    careerLevel: p.careerLevel ? CareerLevel.label(p.careerLevel) : null,
+    hasGccExperience: p.hasGccExperience,
+    hasDrivingLicence: p.hasDrivingLicence,
+    industries: names(industryIds, industryName),
+    functions: names(p.functionIds ?? [], categoryName),
+    desiredEmploymentTypes: (p.desiredEmploymentTypes ?? []).map((t) => DesiredEmploymentType.label(t)),
+    benefits: (p.benefits ?? []).map((b) => Benefit.label(b)),
+    preferredPositions: p.preferredPositions ?? [],
+    preferredIndustries: names(p.preferredIndustryIds ?? [], industryName),
+    preferredCities: names(p.preferredCityIds ?? [], cityName),
+    currentSalary: employer ? salaryRangeLabel(p.currentSalaryRange, p.currentSalaryCurrency) : null,
+    hasDisability: employer ? p.hasDisability : null,
+    linkedinUrl: access.canSeeContact ? p.linkedinUrl : null,
+    portfolioUrl: access.canSeeContact ? p.portfolioUrl : null,
+    experiences: (p.experiences ?? []).map((e) => ({
+      ...e.serialize(),
+      employmentType: e.employmentType ? DesiredEmploymentType.label(e.employmentType) : null,
+      descriptionHtml: toSafeHtml(e.description),
+    })),
+    educations: (p.educations ?? []).map((e) => ({ ...e.serialize(), startDate: e.startDate?.toISODate() ?? null, endDate: e.endDate?.toISODate() ?? null })),
     certifications: (p.certifications ?? []).map((c) => c.serialize()),
     languages: (p.languages ?? []).map((l) => ({ name: l.name, proficiency: l.$extras.pivot_proficiency })),
-    contact: access.canSeeContact ? { email: p.contactEmail || p.user.email, phone: p.phone } : null,
+    contact: access.canSeeContact
+      ? { email: p.contactEmail || p.user.email, phone: p.phone, whatsapp: p.whatsapp, instagramUrl: p.instagramUrl, facebookUrl: p.facebookUrl }
+      : null,
     cvs: (p.cvs ?? []).filter((cv) => access.cvIds.includes(cv.id) && cv.isDownloadable).map(cvBrief),
   }
 }

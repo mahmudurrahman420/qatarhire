@@ -1,6 +1,6 @@
 import { DateTime } from 'luxon'
 import { column } from '@adonisjs/lucid/orm'
-import AppBaseModel from '#models/app_base_model'
+import AppBaseModel, { toBool } from '#models/app_base_model'
 
 export default class CandidateEducation extends AppBaseModel {
   @column({ isPrimary: true })
@@ -23,6 +23,15 @@ export default class CandidateEducation extends AppBaseModel {
 
   @column()
   declare endYear: number | null
+
+  @column.date()
+  declare startDate: DateTime | null
+
+  @column.date()
+  declare endDate: DateTime | null
+
+  @column({ consume: toBool })
+  declare isCustomInstitute: boolean
 
   @column.dateTime({ autoCreate: true, serializeAs: null })
   declare createdAt: DateTime

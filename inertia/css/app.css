@@ -75,3 +75,6 @@
 .prose-job p { margin: 0 0 0.8em; }
 .prose-job ul { list-style: disc; padding-inline-start: 1.25rem; margin: 0 0 0.8em; }
 .prose-job li { margin: 0.2em 0; }
+.prose-job ol { list-style: decimal; padding-inline-start: 1.25rem; margin: 0 0 0.8em; }
+.prose-job > :last-child { margin-bottom: 0; }
+.rte-content:empty::before { content: attr(data-placeholder); color: color-mix(in srgb, var(--color-slate) 60%, transparent); }

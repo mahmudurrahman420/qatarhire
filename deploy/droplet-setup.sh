@@ -107,6 +107,12 @@ AP
   *) echo "Unknown web server on :80 ($LISTENER); app is running on 127.0.0.1:$PORT_LOCAL"; echo "QATARHIRE_SETUP_PARTIAL"; exit 0 ;;
 esac
 
-code=$(curl -s -o /dev/null -w '%{http_code}' -H "Host: $DOMAIN" -H "X-Forwarded-Proto: https" http://127.0.0.1/)
+code=000
+for i in 1 2 3 4 5; do
+  code=$(curl -s -o /dev/null -w '%{http_code}' -H "Host: $DOMAIN" -H "X-Forwarded-Proto: https" http://127.0.0.1/ || true)
+  code=${code:-000}
+  [ "$code" = 200 ] && break
+  sleep 2
+done
 echo "Vhost check via port 80: HTTP $code"
 [ "$code" = 200 ] && echo "QATARHIRE_SETUP_OK" || echo "QATARHIRE_SETUP_CHECK_VHOST"
