@@ -1,5 +1,6 @@
 import vine from '@vinejs/vine'
-import { Availability, ContactSharing, EducationLevel, LanguageProficiency, ProfileVisibility, WorkAuthorization } from '#shared/enums'
+import { Availability, ContactSharing, EducationLevel, Gender, LanguageProficiency, ProfileVisibility, WorkAuthorization } from '#shared/enums'
+import { Currencies } from '#shared/gulf'
 
 const optionalUrl = () => vine.string().trim().url({ require_protocol: true, protocols: ['http', 'https'] }).maxLength(255).optional()
 
@@ -7,6 +8,8 @@ export const profileValidator = vine.compile(
   vine.object({
     fullName: vine.string().trim().minLength(2).maxLength(120),
     headline: vine.string().trim().maxLength(160).optional(),
+    desiredPosition: vine.string().trim().maxLength(120).optional(),
+    gender: vine.enum(Gender.values).optional(),
     currentJobTitle: vine.string().trim().maxLength(120).optional(),
     summary: vine.string().trim().maxLength(4000).optional(),
     phone: vine.string().trim().regex(/^[+\d\s()-]{6,30}$/).optional(),
@@ -18,6 +21,7 @@ export const profileValidator = vine.compile(
     yearsExperience: vine.number().min(0).max(60).withoutDecimals().optional(),
     educationLevel: vine.enum(EducationLevel.values).optional(),
     expectedSalary: vine.number().min(0).max(1_000_000).withoutDecimals().optional(),
+    expectedSalaryCurrency: vine.enum(Currencies).optional(),
     availability: vine.enum(Availability.values).optional(),
     noticePeriodDays: vine.number().min(0).max(365).withoutDecimals().optional(),
     linkedinUrl: optionalUrl(),

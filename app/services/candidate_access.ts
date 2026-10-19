@@ -18,6 +18,9 @@ import EntitlementService from '#services/entitlement_service'
  *  - CV: CVs attached to the company's applications, OR the primary CV when the
  *    candidate opted in with cv_searchable.
  *
+ *  - Public profiles: anyone sees the card and profile; the primary CV is
+ *    downloadable by anyone when the candidate also allowed CV downloads.
+ *
  * Every check runs per request, so a candidate changing their settings
  * (withdrawing consent) takes effect immediately.
  */
@@ -52,20 +55,26 @@ export default class CandidateAccess {
     }
     const applied = await this.hasApplied(company, profile.id)
     const viaSearch = profile.isDiscoverable && (await this.canSearch(company))
-    const canView = applied || viaSearch
+    const canView = applied || viaSearch || profile.isPublic
     const canSeeContact = applied || (viaSearch && profile.contactSharing === 'verified_employers')
 
     const cvIds = new Set<number>(applied ? await this.appliedCvIds(company, profile.id) : [])
-    if (viaSearch && profile.cvSearchable) {
+    if ((viaSearch || profile.isPublic) && profile.cvSearchable) {
       const primary = await CandidateCv.query().where('candidate_profile_id', profile.id).where('is_primary', true).first()
       if (primary) cvIds.add(primary.id)
     }
     return { canView, canSeeContact, cvIds: [...cvIds], applied }
   }
 
+  /** Anyone (including signed-out visitors) may view a public, active, verified-email profile. */
+  static async isPubliclyVisible(profile: CandidateProfile) {
+    await profile.load('user')
+    return profile.isPublic && profile.user.status === 'active' && profile.user.isVerified
+  }
+
   static async logAccess(
     ctx: HttpContext,
-    user: User,
+    user: User | null,
     company: Company | null,
     profileId: number,
     action: 'profile_view' | 'cv_download' | 'contact_view',
@@ -74,7 +83,7 @@ export default class CandidateAccess {
     await CandidateAccessLog.create({
       candidateProfileId: profileId,
       companyId: company?.id ?? null,
-      userId: user.id,
+      userId: user?.id ?? null,
       action,
       candidateCvId: cvId,
       ip: ctx.request.ip(),

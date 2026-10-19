@@ -44,7 +44,7 @@ export default function Contact({ supportEmail }: { supportEmail: string }) {
         </div>
         <aside className="lg:pt-16">
           <h2 className="font-sans text-base font-semibold tracking-normal">Email</h2>
-          <a href={`mailto:${supportEmail}`} className="text-maroon-700 hover:underline">{supportEmail}</a>
+          <a href={`mailto:${supportEmail}`} className="text-brand-700 hover:underline">{supportEmail}</a>
           <p className="mt-4 text-sm text-slate">Reporting a fraudulent job? Use the report link on the job itself so we can act on it faster.</p>
         </aside>
       </div>

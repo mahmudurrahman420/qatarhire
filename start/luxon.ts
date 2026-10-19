@@ -1,5 +1,5 @@
 /*
-| All timestamps are stored and compared in UTC. Displayed in Asia/Qatar on the client.
+| All timestamps are stored and compared in UTC. Displayed in Gulf time on the client.
 */
 import { Settings } from 'luxon'
 

@@ -27,8 +27,8 @@ export default function Apply({ job, cvs, completeness }: { job: JobCard; cvs: C
               <fieldset className="grid gap-2">
                 <legend className="sr-only">Choose a CV</legend>
                 {cvs.map((cv) => (
-                  <label key={cv.id} className={cn('flex cursor-pointer items-center gap-3 rounded-ctl border p-3', form.data.cvId === cv.id ? 'border-maroon-500 bg-maroon-50/40' : 'border-line')}>
-                    <input type="radio" name="cv" className="accent-maroon-600" checked={form.data.cvId === cv.id} onChange={() => form.setData('cvId', cv.id)} />
+                  <label key={cv.id} className={cn('flex cursor-pointer items-center gap-3 rounded-ctl border p-3', form.data.cvId === cv.id ? 'border-brand-500 bg-brand-50/40' : 'border-line')}>
+                    <input type="radio" name="cv" className="accent-brand-600" checked={form.data.cvId === cv.id} onChange={() => form.setData('cvId', cv.id)} />
                     <FileText className="size-5 text-slate" aria-hidden />
                     <span className="min-w-0">
                       <span className="block text-sm font-medium">{cv.label}</span>
@@ -37,7 +37,7 @@ export default function Apply({ job, cvs, completeness }: { job: JobCard; cvs: C
                   </label>
                 ))}
                 {form.errors.cvId && <p className="text-[13px] text-danger">{form.errors.cvId}</p>}
-                <Link href="/candidate/profile" className="text-sm text-maroon-700 hover:underline">Upload a different CV</Link>
+                <Link href="/candidate/profile" className="text-sm text-brand-700 hover:underline">Upload a different CV</Link>
               </fieldset>
             ) : (
               <div className="flex flex-col items-start gap-3">

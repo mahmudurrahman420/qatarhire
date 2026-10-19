@@ -10,6 +10,7 @@ import {
   SortOptionsCandidates,
   WorkAuthorization,
 } from '#shared/enums'
+import { Currencies, countryBySlug } from '#shared/gulf'
 import { keywordTerms, likeTerm, locationIdsForSlug, toArray, toInt } from '#services/search_helpers'
 
 export type CandidateFilters = {
@@ -27,6 +28,8 @@ export type CandidateFilters = {
   preferred: string
   salaryMin: number | null
   salaryMax: number | null
+  currency: string
+  gender: string
   availability: string[]
   noticeMax: number | null
   authorization: string[]
@@ -54,6 +57,8 @@ export function parseCandidateFilters(input: Record<string, unknown>): Candidate
     preferred: String(input.preferred ?? '').slice(0, 140),
     salaryMin: toInt(input.salaryMin),
     salaryMax: toInt(input.salaryMax),
+    currency: Currencies.includes(String(input.currency) as never) ? String(input.currency) : '',
+    gender: input.gender === 'male' || input.gender === 'female' ? input.gender : '',
     availability: toArray(input.availability).filter((v) => (Availability.values as readonly string[]).includes(v)),
     noticeMax: toInt(input.noticeMax),
     authorization: toArray(input.authorization).filter((v) => (WorkAuthorization.values as readonly string[]).includes(v)),
@@ -66,18 +71,25 @@ export function parseCandidateFilters(input: Record<string, unknown>): Candidate
 }
 
 /**
- * Recruiter candidate search. Only returns discoverable, active, email-verified
- * candidates. Callers must have already checked that the company may search.
+ * Candidate search. Returns active, email-verified candidates who opted in:
+ *  - scope 'employer': discoverable + public profiles (caller checked the company may search)
+ *  - scope 'public':   public profiles only (homepage and /talent, no sign-in)
  */
 export default class CandidateSearchService {
-  static baseQuery() {
+  static baseQuery(scope: 'employer' | 'public' = 'employer') {
     return CandidateProfile.query()
-      .where('candidate_profiles.visibility', 'discoverable')
+      .whereIn('candidate_profiles.visibility', scope === 'public' ? ['public'] : ['discoverable', 'public'])
       .whereHas('user', (u) => u.where('status', 'active').whereNotNull('email_verified_at'))
   }
 
-  static async search(f: CandidateFilters, perPage = 20) {
-    const query = this.baseQuery()
+  static async search(
+    f: CandidateFilters,
+    perPage = 20,
+    scope: 'employer' | 'public' = 'employer',
+    extra?: (q: ReturnType<typeof CandidateSearchService.baseQuery>) => void
+  ) {
+    const query = this.baseQuery(scope)
+    extra?.(query)
     const terms = keywordTerms(f.q)
 
     for (const term of terms) {
@@ -135,8 +147,14 @@ export default class CandidateSearchService {
     if (cur) query.whereIn('candidate_profiles.current_location_id', cur.length ? cur : [-1])
     const pref = await locationIdsForSlug(f.preferred)
     if (pref) query.whereIn('candidate_profiles.preferred_location_id', pref.length ? pref : [-1])
-    if (f.salaryMin !== null) query.where('candidate_profiles.expected_salary', '>=', f.salaryMin)
-    if (f.salaryMax !== null) query.where('candidate_profiles.expected_salary', '<=', f.salaryMax)
+    if (f.salaryMin !== null || f.salaryMax !== null) {
+      // salaries are only comparable within one currency
+      const currency = f.currency || countryBySlug(f.preferred || f.location)?.currency || 'AED'
+      query.where('candidate_profiles.expected_salary_currency', currency)
+      if (f.salaryMin !== null) query.where('candidate_profiles.expected_salary', '>=', f.salaryMin)
+      if (f.salaryMax !== null) query.where('candidate_profiles.expected_salary', '<=', f.salaryMax)
+    }
+    if (f.gender) query.where('candidate_profiles.gender', f.gender)
     if (f.availability.length) query.whereIn('candidate_profiles.availability', f.availability)
     if (f.noticeMax !== null) query.where('candidate_profiles.notice_period_days', '<=', f.noticeMax)
     if (f.authorization.length) query.whereIn('candidate_profiles.work_authorization', f.authorization)

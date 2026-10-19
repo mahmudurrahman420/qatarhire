@@ -1,6 +1,6 @@
-# QatarHire — Qatar job portal
+# hiremegulf.com — Gulf talent marketplace
 
-A recruitment platform for Qatar: job seekers build private profiles and apply for jobs; employers register, get verified, post vacancies, run an applicant pipeline and search a consent-based candidate database; administrators verify employers, moderate jobs and handle reports.
+A talent marketplace for the UAE, Saudi Arabia, Qatar, Kuwait, Oman and Bahrain: jobseekers publish profiles and CVs (private, employer-only or public) so recruiters can find them, and apply for jobs; employers register, get verified, post vacancies, run an applicant pipeline and search a consent-based candidate database; administrators verify employers, moderate jobs and handle reports.
 
 Built with **AdonisJS 6** (TypeScript), **React 19 + Inertia**, **Tailwind CSS 4**, **MySQL 8** (SQLite for local development and tests).
 
@@ -30,20 +30,21 @@ With `MAIL_MAILER=log` (the default in `.env.example`), emails such as verificat
 
 ### Demo accounts (development seed only)
 
-All use the password `DemoPass#2026`. The demo seeder refuses to run in production.
+All use the password `DemoPass#2026`. The demo seeder refuses to run in production. Portraits are taken from the approved homepage mockup.
 
 | Role | Email |
 |---|---|
-| Employer owner (verified) | `owner@pearlbuild.example` |
-| Recruiter (same company) | `recruiter@pearlbuild.example` |
-| Employer owner (pending verification) | `owner@gulffreight.example` |
-| Candidate (discoverable, shares contact) | `aisha@candidate.example` |
-| Candidate (private profile) | `grace@candidate.example` |
+| Employer owner (verified, Doha) | `owner@horizonprojects.example` |
+| Recruiter (same company) | `recruiter@horizonprojects.example` |
+| Employer owner (verified, Dubai) | `owner@crescenttrading.example` |
+| Employer owner (pending verification) | `owner@gulfcoasthotels.example` |
+| Candidate, public profile with public CV | `aisha@candidate.example` |
+| Candidate, private profile | `grace@candidate.example` |
 
 ## Tests
 
 ```bash
-npm test             # 79 tests: unit + functional HTTP tests against an SQLite test database
+npm test             # 87 tests: unit + functional HTTP tests against an SQLite test database
 npm run typecheck    # server and client TypeScript
 npm run build        # production build into ./build
 ```
@@ -59,6 +60,6 @@ The functional suite covers registration, email verification, password reset, CS
 | `node ace jobs:expire` | Close jobs past their deadline, send expiry reminders, prune tokens (daily) |
 | `node ace alerts:send` | Email candidates new jobs matching their saved alerts (hourly or daily) |
 
-## Renaming the brand
+## Brand assets
 
-Set `APP_NAME` in `.env` and update the wordmark in `inertia/components/brand.tsx` and `public/favicon.svg`. A few static pages mention the name in their copy (`inertia/pages/public/pages/*`).
+The logo mark, hero skyline, recruiter illustration and demo portraits in `public/images/` were taken from the approved homepage mockup. Fonts (Bricolage Grotesque, IBM Plex Sans / Arabic) are self-hosted via `@fontsource`, so no third-party font requests are made.

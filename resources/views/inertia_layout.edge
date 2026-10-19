@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#8A1538">
+  <meta name="theme-color" content="#0B7A3C">
   {{-- Server-rendered meta so crawlers get titles, descriptions and JobPosting data without running JS --}}
-  <title inertia>{{ page.props.meta?.title ? page.props.meta.title + ' | ' + page.props.appName : page.props.appName + ' — Jobs in Qatar' }}</title>
+  <title inertia>{{ page.props.meta?.title ? page.props.meta.title + ' | ' + page.props.appName : page.props.appName + ' — Get discovered by Gulf employers' }}</title>
   @if(page.props.meta?.description)
     <meta inertia name="description" content="{{ page.props.meta.description }}">
   @end
@@ -18,10 +18,7 @@
   @if(page.props.structuredData)
     <script type="application/ld+json" nonce="{{ cspNonce }}">{{{ JSON.stringify(page.props.structuredData).replace(/</g, '\\u003c') }}}</script>
   @end
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans+Arabic:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="icon" href="/favicon.png" type="image/png">
   @viteReactRefresh()
   @inertiaHead()
   @vite(['inertia/app/app.tsx', `inertia/pages/${page.component}.tsx`])

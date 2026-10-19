@@ -3,7 +3,7 @@ import type { CommandOptions } from '@adonisjs/core/types/ace'
 import { DateTime } from 'luxon'
 
 /**
- * Daily maintenance (schedule with cron, e.g. 02:00 Qatar time):
+ * Daily maintenance (schedule with cron, e.g. 02:00 Gulf time):
  *  - closes published jobs whose deadline has passed
  *  - reminds employers about jobs expiring in 3 days
  *  - unfeatures jobs whose featured period ended
@@ -19,10 +19,10 @@ export default class JobsExpire extends BaseCommand {
     const { default: CompanyUser } = await import('#models/company_user')
     const { default: UserToken } = await import('#models/user_token')
     const { default: NotificationService } = await import('#services/notification_service')
-    const { qatarToday } = await import('#services/dates')
+    const { gulfToday } = await import('#services/dates')
     await import('#start/queue')
 
-    const today = qatarToday()
+    const today = gulfToday()
     const expired = await Job.query().where('status', 'published').whereNotNull('deadline').where('deadline', '<', today)
     for (const job of expired) {
       job.status = 'closed'

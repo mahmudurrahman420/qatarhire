@@ -89,6 +89,21 @@ export default class CandidatesController {
     return response.redirect().back()
   }
 
+  /** One-click shortlist toggle used by talent cards. */
+  async toggleSave({ params, company, auth, response }: HttpContext) {
+    const profile = await CandidateProfile.find(Number(params.id) || 0)
+    if (!profile) return response.notFound()
+    const access = await CandidateAccess.evaluate(company, profile)
+    if (!access.canView) return response.notFound()
+    const existing = await SavedCandidate.query().where('company_id', company.id).where('candidate_profile_id', profile.id)
+    if (existing.length) {
+      await SavedCandidate.query().where('company_id', company.id).where('candidate_profile_id', profile.id).delete()
+    } else {
+      await SavedCandidate.create({ companyId: company.id, candidateProfileId: profile.id, listName: 'Shortlist', savedBy: auth.getUserOrFail().id })
+    }
+    return response.redirect().back()
+  }
+
   async unsave({ params, company, response }: HttpContext) {
     await SavedCandidate.query().where('id', Number(params.savedId) || 0).where('company_id', company.id).delete()
     return response.redirect().back()

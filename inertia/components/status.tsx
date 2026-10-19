@@ -9,7 +9,7 @@ export function JobStatusBadge({ status, expired }: { status: string; expired?: 
 }
 
 export function ApplicationStatusBadge({ status }: { status: string }) {
-  const tone = ({ submitted: 'neutral', under_review: 'dune', shortlisted: 'maroon', interview: 'maroon', offer: 'gulf', hired: 'gulf', rejected: 'neutral', withdrawn: 'neutral' } as const)[status as 'submitted'] ?? 'neutral'
+  const tone = ({ submitted: 'neutral', under_review: 'dune', shortlisted: 'brand', interview: 'brand', offer: 'gulf', hired: 'gulf', rejected: 'neutral', withdrawn: 'neutral' } as const)[status as 'submitted'] ?? 'neutral'
   return <Badge tone={tone}>{ApplicationStatus.label(status as never)}</Badge>
 }
 

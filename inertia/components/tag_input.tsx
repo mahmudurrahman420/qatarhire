@@ -37,9 +37,9 @@ export function TagInput({ value, onChange, suggestions, max = 30, placeholder, 
       <label htmlFor={id} className="text-sm font-medium">{label}</label>
       <div className={cn(controlClass, 'flex min-h-10 flex-wrap items-center gap-1.5 py-1.5')}>
         {value.map((t) => (
-          <span key={t} className="inline-flex items-center gap-1 rounded-full bg-maroon-50 py-0.5 pe-1 ps-2.5 text-[13px] text-maroon-700">
+          <span key={t} className="inline-flex items-center gap-1 rounded-full bg-brand-50 py-0.5 pe-1 ps-2.5 text-[13px] text-brand-700">
             {t}
-            <button type="button" onClick={() => onChange(value.filter((v) => v !== t))} aria-label={`Remove ${t}`} className="rounded-full p-0.5 hover:bg-maroon-100">
+            <button type="button" onClick={() => onChange(value.filter((v) => v !== t))} aria-label={`Remove ${t}`} className="rounded-full p-0.5 hover:bg-brand-100">
               <X className="size-3" />
             </button>
           </span>

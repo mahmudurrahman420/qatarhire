@@ -16,7 +16,7 @@ export default function CandidateShow({ candidate, applied, saved }: Props) {
   return (
     <AppLayout>
       <Head title={candidate.headline ?? 'Candidate'} />
-      <Link href="/employer/candidates" className="mb-4 inline-block text-sm text-slate hover:text-maroon-700" onClick={(e) => { if (window.history.length > 1) { e.preventDefault(); window.history.back() } }}>Back to results</Link>
+      <Link href="/employer/candidates" className="mb-4 inline-block text-sm text-slate hover:text-brand-700" onClick={(e) => { if (window.history.length > 1) { e.preventDefault(); window.history.back() } }}>Back to results</Link>
       <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
         <CandidateProfileView c={candidate} showFullName={Boolean(candidate.contact)} />
         <aside className="flex flex-col gap-6 lg:sticky lg:top-20 lg:self-start">
@@ -27,7 +27,7 @@ export default function CandidateShow({ candidate, applied, saved }: Props) {
               <ul className="mb-3 flex flex-col gap-2">
                 {saved.map((s) => (
                   <li key={s.id} className="flex items-start justify-between gap-2 text-sm">
-                    <span><Badge tone="maroon">{s.listName}</Badge>{s.note && <span className="mt-1 block text-[13px] text-slate">{s.note}</span>}</span>
+                    <span><Badge tone="brand">{s.listName}</Badge>{s.note && <span className="mt-1 block text-[13px] text-slate">{s.note}</span>}</span>
                     <button type="button" className="rounded p-1 text-slate hover:bg-pearl" aria-label={`Remove from ${s.listName}`} onClick={() => router.delete(`/employer/saved-candidates/${s.id}`, { preserveScroll: true })}><X className="size-4" /></button>
                   </li>
                 ))}
@@ -39,7 +39,7 @@ export default function CandidateShow({ candidate, applied, saved }: Props) {
       </div>
       <Modal open={open} onClose={() => setOpen(false)} title="Save candidate">
         <form className="flex flex-col gap-4" onSubmit={(e) => { e.preventDefault(); form.post(`/employer/candidates/${candidate.id}/save`, { preserveScroll: true, onSuccess: () => setOpen(false) }) }}>
-          <TextField label="List" value={form.data.listName} onChange={(e) => form.setData('listName', e.target.value)} error={form.errors.listName} hint="Lists are shared with your team, e.g. 'Lusail site engineers'." />
+          <TextField label="List" value={form.data.listName} onChange={(e) => form.setData('listName', e.target.value)} error={form.errors.listName} hint="Lists are shared with your team, e.g. 'Dubai site engineers'." />
           <TextField label="Note" optional value={form.data.note} onChange={(e) => form.setData('note', e.target.value)} error={form.errors.note} />
           <div className="flex justify-end gap-2"><Button type="button" variant="quiet" onClick={() => setOpen(false)}>Cancel</Button><Button type="submit" loading={form.processing}>Save</Button></div>
         </form>

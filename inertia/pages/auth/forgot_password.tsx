@@ -10,7 +10,7 @@ export default function ForgotPassword() {
       <form className="flex flex-col gap-4" onSubmit={(e) => { e.preventDefault(); form.post('/forgot-password') }}>
         <TextField label="Email" type="email" autoComplete="email" value={form.data.email} onChange={(e) => form.setData('email', e.target.value)} error={form.errors.email} required />
         <div className="flex items-center justify-between">
-          <Link href="/login" className="text-sm text-maroon-700 hover:underline">Back to sign in</Link>
+          <Link href="/login" className="text-sm text-brand-700 hover:underline">Back to sign in</Link>
           <Button type="submit" loading={form.processing}>Send reset link</Button>
         </div>
       </form>

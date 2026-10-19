@@ -37,7 +37,7 @@ export default function Applicants({ job, filters, counts, applications }: Props
         {stages.map((st) => {
           const n = st ? counts[st] ?? 0 : total
           return (
-            <button key={st} type="button" onClick={() => go({ status: st })} aria-current={filters.status === st ? 'true' : undefined} className={cn('-mb-px whitespace-nowrap border-b-2 px-3 py-2 text-sm', filters.status === st ? 'border-maroon-600 font-medium text-maroon-700' : 'border-transparent text-slate hover:text-ink')}>
+            <button key={st} type="button" onClick={() => go({ status: st })} aria-current={filters.status === st ? 'true' : undefined} className={cn('-mb-px whitespace-nowrap border-b-2 px-3 py-2 text-sm', filters.status === st ? 'border-brand-600 font-medium text-brand-700' : 'border-transparent text-slate hover:text-ink')}>
               {st ? ApplicationStatus.label(st) : 'All active'} <span className="tabular-nums text-slate">{n}</span>
             </button>
           )

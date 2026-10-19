@@ -16,7 +16,7 @@ function Breakdown({ title, data, label, href }: { title: string; data: Record<s
         <ul className="divide-y divide-line text-sm">
           {entries.map(([k, v]) => (
             <li key={k} className="flex justify-between px-5 py-2">
-              {href ? <Link href={href(k)} className="hover:text-maroon-700">{label(k)}</Link> : <span>{label(k)}</span>}
+              {href ? <Link href={href(k)} className="hover:text-brand-700">{label(k)}</Link> : <span>{label(k)}</span>}
               <span className="tabular-nums">{v}</span>
             </li>
           ))}

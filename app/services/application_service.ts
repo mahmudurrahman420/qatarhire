@@ -15,7 +15,7 @@ export class ApplicationError extends Error {}
 export default class ApplicationService {
   static async apply(job: Job, profile: CandidateProfile, cv: CandidateCv | null, coverLetter: string | null) {
     if (!job.isOpen) throw new ApplicationError('This job is no longer accepting applications.')
-    if (job.applicationMethod !== 'platform') throw new ApplicationError('This employer accepts applications outside QatarHire.')
+    if (job.applicationMethod !== 'platform') throw new ApplicationError('This employer accepts applications outside HireMeGulf.')
 
     const existing = await Application.query().where('job_id', job.id).where('candidate_profile_id', profile.id).first()
     if (existing) throw new ApplicationError('You have already applied for this job.')

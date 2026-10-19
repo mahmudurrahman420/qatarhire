@@ -19,7 +19,7 @@ export default function AdminCompanies({ filters, companies }: Props) {
         <Table head={['Company', 'Industry', 'Jobs', 'Registered', 'Status']}>
           {companies.data.map((c) => (
             <tr key={c.id}>
-              <td><Link href={`/admin/companies/${c.id}`} className="font-medium hover:text-maroon-700">{c.name}</Link>{c.isFeatured && <span className="ms-2 text-[12px] text-amber">Featured</span>}</td>
+              <td><Link href={`/admin/companies/${c.id}`} className="font-medium hover:text-brand-700">{c.name}</Link>{c.isFeatured && <span className="ms-2 text-[12px] text-amber">Featured</span>}</td>
               <td className="text-slate">{c.industry ?? '—'}</td>
               <td className="tabular-nums">{c.jobs}</td>
               <td className="text-slate">{date(c.createdAt)}</td>

@@ -2,7 +2,7 @@ import { useId, type ComponentProps, type ReactNode } from 'react'
 import { cn } from '~/lib/cn'
 
 export const controlClass =
-  'w-full rounded-ctl border border-line bg-white px-3 text-[15px] text-ink placeholder:text-slate/60 transition-colors hover:border-slate/40 focus:border-maroon-500 focus:outline-none focus:ring-2 focus:ring-maroon-100 disabled:bg-pearl aria-[invalid=true]:border-danger'
+  'w-full rounded-ctl border border-line bg-white px-3 text-[15px] text-ink placeholder:text-slate/60 transition-colors hover:border-slate/40 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100 disabled:bg-pearl aria-[invalid=true]:border-danger'
 
 type FieldProps = {
   label: ReactNode
@@ -95,7 +95,7 @@ export function Checkbox({ label, description, className, ...rest }: { label: Re
   const id = useId()
   return (
     <div className={cn('flex items-start gap-2.5', className)}>
-      <input id={id} type="checkbox" {...rest} className="mt-1 size-4 shrink-0 rounded border-line accent-maroon-600" />
+      <input id={id} type="checkbox" {...rest} className="mt-1 size-4 shrink-0 rounded border-line accent-brand-600" />
       <label htmlFor={id} className="text-sm leading-snug">
         <span className="text-ink">{label}</span>
         {description && <span className="block text-[13px] text-slate">{description}</span>}
@@ -122,10 +122,10 @@ export function RadioCards<T extends string>({
           key={o.value}
           className={cn(
             'flex cursor-pointer items-start gap-3 rounded-ctl border bg-white p-3 transition-colors',
-            value === o.value ? 'border-maroon-500 bg-maroon-50/50' : 'border-line hover:border-slate/40'
+            value === o.value ? 'border-brand-500 bg-brand-50/50' : 'border-line hover:border-slate/40'
           )}
         >
-          <input type="radio" name={name} value={o.value} checked={value === o.value} onChange={() => onChange(o.value)} className="mt-1 accent-maroon-600" />
+          <input type="radio" name={name} value={o.value} checked={value === o.value} onChange={() => onChange(o.value)} className="mt-1 accent-brand-600" />
           <span>
             <span className="block text-sm font-medium">{o.label}</span>
             {o.description && <span className="block text-[13px] text-slate">{o.description}</span>}

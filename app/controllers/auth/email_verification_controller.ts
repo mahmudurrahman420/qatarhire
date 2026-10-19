@@ -34,7 +34,7 @@ export default class EmailVerificationController {
       await user.save()
       await AuditLogger.log('auth.email_verified', { ctx, actorId: user.id })
     }
-    session.flash('success', 'Your email is verified. Welcome to QatarHire!')
+    session.flash('success', 'Your email is verified. Welcome to HireMeGulf!')
     if (!auth.user) {
       await auth.use('web').login(user)
     }

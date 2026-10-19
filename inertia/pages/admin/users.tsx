@@ -20,7 +20,7 @@ export default function Users({ filters, users }: Props) {
           <tr key={u.id}>
             <td><p className="font-medium">{u.fullName}</p><p className="text-[13px] text-slate">{u.email}{!u.emailVerified && ' (unverified)'}</p></td>
             <td className="capitalize">{u.role}</td>
-            <td>{u.company ? <Link href={`/admin/companies/${u.company.id}`} className="hover:text-maroon-700">{u.company.name}</Link> : '—'}</td>
+            <td>{u.company ? <Link href={`/admin/companies/${u.company.id}`} className="hover:text-brand-700">{u.company.name}</Link> : '—'}</td>
             <td className="text-slate">{date(u.createdAt)}</td>
             <td>{u.status === 'active' ? <Badge tone="gulf">Active</Badge> : <Badge tone="danger">Suspended</Badge>}</td>
             <td className="text-end">

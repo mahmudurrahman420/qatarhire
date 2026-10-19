@@ -20,6 +20,8 @@ export default class extends BaseSchema {
       table.enum('work_arrangement', ['on_site', 'remote', 'hybrid']).notNullable().defaultTo('on_site')
       table.integer('salary_min').unsigned().nullable()
       table.integer('salary_max').unsigned().nullable()
+      // currency of the job's country (AED, SAR, QAR, KWD, OMR, BHD); amounts are whole units per month
+      table.string('salary_currency', 3).notNullable().defaultTo('QAR')
       table.boolean('salary_visible').notNullable().defaultTo(true)
       table.integer('vacancies').unsigned().notNullable().defaultTo(1)
       table.date('deadline').nullable()

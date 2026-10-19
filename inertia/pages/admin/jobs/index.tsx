@@ -19,8 +19,8 @@ export default function AdminJobs({ filters, jobs }: Props) {
         <Table head={['Job', 'Company', 'Applicants', 'Updated', 'Status']}>
           {jobs.data.map((j) => (
             <tr key={j.id}>
-              <td><Link href={`/admin/jobs/${j.id}`} className="font-medium hover:text-maroon-700">{j.title}</Link>{j.isFeatured && <span className="ms-2 text-[12px] text-amber">Featured</span>}</td>
-              <td><Link href={`/admin/companies/${j.company.id}`} className="hover:text-maroon-700">{j.company.name}</Link><div className="mt-1"><VerificationBadge status={j.company.verificationStatus} /></div></td>
+              <td><Link href={`/admin/jobs/${j.id}`} className="font-medium hover:text-brand-700">{j.title}</Link>{j.isFeatured && <span className="ms-2 text-[12px] text-amber">Featured</span>}</td>
+              <td><Link href={`/admin/companies/${j.company.id}`} className="hover:text-brand-700">{j.company.name}</Link><div className="mt-1"><VerificationBadge status={j.company.verificationStatus} /></div></td>
               <td className="tabular-nums">{j.applicants}</td>
               <td className="text-slate">{ago(j.updatedAt)}</td>
               <td><JobStatusBadge status={j.status} expired={j.isExpired} /></td>

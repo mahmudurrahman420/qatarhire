@@ -17,7 +17,7 @@ export default function EmployerJobs({ jobs, status }: { jobs: Job[]; status: st
       <PageHeader title="Jobs" actions={<ButtonLink href="/employer/jobs/create">Post a job</ButtonLink>} />
       <nav className="mb-4 flex gap-1 overflow-x-auto border-b border-line" aria-label="Job status">
         {tabs.map(([v, l]) => (
-          <Link key={v} href={v ? `/employer/jobs?status=${v}` : '/employer/jobs'} aria-current={status === v ? 'page' : undefined} className={cn('-mb-px whitespace-nowrap border-b-2 px-3 py-2 text-sm', status === v ? 'border-maroon-600 font-medium text-maroon-700' : 'border-transparent text-slate hover:text-ink')}>
+          <Link key={v} href={v ? `/employer/jobs?status=${v}` : '/employer/jobs'} aria-current={status === v ? 'page' : undefined} className={cn('-mb-px whitespace-nowrap border-b-2 px-3 py-2 text-sm', status === v ? 'border-brand-600 font-medium text-brand-700' : 'border-transparent text-slate hover:text-ink')}>
             {l}
           </Link>
         ))}
@@ -30,14 +30,14 @@ export default function EmployerJobs({ jobs, status }: { jobs: Job[]; status: st
               {jobs.map((j) => (
                 <tr key={j.id} className="border-b border-line align-top last:border-b-0">
                   <td className="px-5 py-3">
-                    <Link href={`/employer/jobs/${j.id}/edit`} className="font-medium hover:text-maroon-700">{j.title}</Link>
+                    <Link href={`/employer/jobs/${j.id}/edit`} className="font-medium hover:text-brand-700">{j.title}</Link>
                     <p className="text-[13px] text-slate">{j.location ?? 'No location'} — edited {ago(j.updatedAt)}</p>
                     {j.status === 'rejected' && j.moderationNote && <p className="mt-1 text-[13px] text-danger">Reviewer: {j.moderationNote}</p>}
                   </td>
                   <td className="px-3 py-3"><JobStatusBadge status={j.status} expired={j.isExpired} /></td>
                   <td className="px-3 py-3 text-end tabular-nums">
-                    <Link href={`/employer/jobs/${j.id}/applicants`} className="hover:text-maroon-700">{j.applicants}</Link>
-                    {j.newApplicants > 0 && <span className="ms-1.5 rounded-full bg-maroon-600 px-1.5 text-[11px] text-white">{j.newApplicants} new</span>}
+                    <Link href={`/employer/jobs/${j.id}/applicants`} className="hover:text-brand-700">{j.applicants}</Link>
+                    {j.newApplicants > 0 && <span className="ms-1.5 rounded-full bg-brand-600 px-1.5 text-[11px] text-white">{j.newApplicants} new</span>}
                   </td>
                   <td className="px-3 py-3 text-end tabular-nums text-slate">{j.views}</td>
                   <td className="px-3 py-3 text-slate">{j.deadline ? date(j.deadline) : '—'}</td>

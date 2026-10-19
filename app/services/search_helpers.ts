@@ -20,11 +20,19 @@ export function keywordTerms(q: string | undefined | null) {
     .slice(0, 6)
 }
 
-/** A municipality slug matches itself and its child areas. */
+/**
+ * A location slug matches itself and everything inside it:
+ * a country matches all its cities and districts; a city matches its districts.
+ * Returns null when no location filter is set, [] when the slug is unknown.
+ */
 export async function locationIdsForSlug(slug: string | undefined | null) {
   if (!slug) return null
   const loc = await Location.findBy('slug', slug)
   if (!loc) return []
+  if (loc.kind === 'country') {
+    const all = await Location.query().where('country_code', loc.countryCode).select('id')
+    return all.map((l) => l.id)
+  }
   const children = await Location.query().where('parent_id', loc.id).select('id')
   return [loc.id, ...children.map((c) => c.id)]
 }

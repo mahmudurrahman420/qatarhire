@@ -34,7 +34,7 @@ export default class ApplicationsController {
     const job = await Job.query().where('slug', params.slug).preload('company').preload('location').first()
     if (!job) return response.notFound()
     if (!job.isOpen || job.applicationMethod !== 'platform') {
-      session.flash('error', 'This job is not accepting applications on QatarHire.')
+      session.flash('error', 'This job is not accepting applications on HireMeGulf.')
       return response.redirect().toPath(`/jobs/${job.slug}`)
     }
     const existing = await Application.query().where('job_id', job.id).where('candidate_profile_id', profile.id).first()

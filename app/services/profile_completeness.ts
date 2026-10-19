@@ -7,14 +7,16 @@ import type CandidateProfile from '#models/candidate_profile'
 export function computeCompleteness(p: CandidateProfile) {
   const checks: Array<[boolean, number, string]> = [
     [Boolean(p.headline), 10, 'Add a professional headline'],
-    [Boolean(p.summary && p.summary.length >= 80), 10, 'Write a summary of at least a few sentences'],
+    [Boolean(p.summary && p.summary.length >= 80), 5, 'Write a summary of at least a few sentences'],
+    [Boolean(p.desiredPosition), 5, 'Add the position you want'],
+    [Boolean(p.photoKey), 5, 'Add a profile photo'],
     [Boolean(p.currentJobTitle), 5, 'Add your current or most recent job title'],
     [p.industryId !== null, 5, 'Choose your industry'],
     [p.yearsExperience !== null, 5, 'Add your years of experience'],
     [p.currentLocationId !== null || Boolean(p.currentLocationText), 5, 'Add your current location'],
-    [p.preferredLocationId !== null, 5, 'Choose a preferred work location in Qatar'],
+    [p.preferredLocationId !== null, 5, 'Choose where in the Gulf you want to work'],
     [p.availability !== null, 5, 'Set your availability'],
-    [p.educationLevel !== null, 5, 'Set your highest education level'],
+    
     [(p.experiences?.length ?? 0) > 0, 15, 'Add your employment history'],
     [(p.educations?.length ?? 0) > 0, 5, 'Add your education'],
     [(p.skills?.length ?? 0) >= 3, 10, 'Add at least three skills'],

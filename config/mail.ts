@@ -4,7 +4,7 @@ import { LogTransport } from '#services/mail/log_transport'
 
 const mailConfig = defineConfig({
   default: env.get('MAIL_MAILER'),
-  from: { address: env.get('MAIL_FROM_ADDRESS'), name: env.get('MAIL_FROM_NAME', 'QatarHire') },
+  from: { address: env.get('MAIL_FROM_ADDRESS'), name: env.get('MAIL_FROM_NAME', 'HireMeGulf') },
   mailers: {
     smtp: transports.smtp({
       host: env.get('SMTP_HOST', ''),

@@ -16,7 +16,7 @@ export default class Mailer {
   }
 
   static async deliver(job: MailJob) {
-    const appName = env.get('APP_NAME', 'QatarHire')
+    const appName = env.get('APP_NAME', 'HireMeGulf')
     const appUrl = env.get('APP_URL')
     await mail.send((message) => {
       message

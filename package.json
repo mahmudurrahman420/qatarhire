@@ -1,5 +1,5 @@
 {
-  "name": "qatarhire",
+  "name": "hiremegulf",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -50,6 +50,9 @@
     "@adonisjs/shield": "^8.2.0",
     "@adonisjs/static": "^1.1.1",
     "@adonisjs/vite": "^4.0.0",
+    "@fontsource-variable/bricolage-grotesque": "^5.3.0",
+    "@fontsource/ibm-plex-sans": "^5.3.0",
+    "@fontsource/ibm-plex-sans-arabic": "^5.3.0",
     "@inertiajs/react": "^2.3.29",
     "@vinejs/vine": "^3.0.1",
     "better-sqlite3": "^13.0.3",

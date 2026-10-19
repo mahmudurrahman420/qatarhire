@@ -1,22 +1,24 @@
 import type { Salary } from '~/lib/types'
 
-const TZ = 'Asia/Qatar'
-const nf = new Intl.NumberFormat('en-QA')
+import { PLATFORM_TZ } from '#shared/gulf'
 
-export function qar(n: number) {
-  return `QAR ${nf.format(n)}`
+const TZ = PLATFORM_TZ
+const nf = new Intl.NumberFormat('en-GB')
+
+export function money(n: number, currency: string | null | undefined) {
+  return `${currency ?? ''} ${nf.format(n)}`.trim()
 }
 
 export function salaryText(s: Salary) {
   if (!s) return null
-  if (s.min !== null && s.max !== null && s.min !== s.max) return `QAR ${nf.format(s.min)}–${nf.format(s.max)} / month`
+  if (s.min !== null && s.max !== null && s.min !== s.max) return `${s.currency} ${nf.format(s.min)}–${nf.format(s.max)} / month`
   const v = s.max ?? s.min
-  return v === null ? null : `QAR ${nf.format(v)} / month`
+  return v === null ? null : `${s.currency} ${nf.format(v)} / month`
 }
 
 export function date(iso: string | null | undefined, opts: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' }) {
   if (!iso) return ''
-  const d = iso.length === 10 ? new Date(`${iso}T12:00:00+03:00`) : new Date(iso)
+  const d = iso.length === 10 ? new Date(`${iso}T12:00:00Z`) : new Date(iso)
   return new Intl.DateTimeFormat('en-GB', { timeZone: TZ, ...opts }).format(d)
 }
 
@@ -24,7 +26,7 @@ export function dateTime(iso: string | null | undefined) {
   return date(iso, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
 }
 
-/** "today", "3 days ago", "2 months ago" in Qatar time. */
+/** "today", "3 days ago", "2 months ago" in Gulf time. */
 export function ago(iso: string | null | undefined) {
   if (!iso) return ''
   const diff = Date.now() - new Date(iso).getTime()
@@ -39,7 +41,7 @@ export function ago(iso: string | null | undefined) {
   return months < 12 ? `${months} month${months > 1 ? 's' : ''} ago` : `${Math.floor(months / 12)} year${months >= 24 ? 's' : ''} ago`
 }
 
-/** Days until a YYYY-MM-DD deadline (inclusive, Qatar time). */
+/** Days until a YYYY-MM-DD deadline (inclusive, Gulf time). */
 export function daysLeft(deadline: string | null) {
   if (!deadline) return null
   const today = new Intl.DateTimeFormat('en-CA', { timeZone: TZ }).format(new Date())

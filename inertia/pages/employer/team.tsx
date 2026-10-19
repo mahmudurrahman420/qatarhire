@@ -23,7 +23,7 @@ export default function Team({ members }: { members: Member[] }) {
               {members.map((m) => (
                 <tr key={m.id} className="border-b border-line last:border-b-0">
                   <td className="px-5 py-3"><p className="font-medium">{m.fullName}</p><p className="text-[13px] text-slate">{m.email}</p></td>
-                  <td className="px-3 py-3">{m.role === 'owner' ? <Badge tone="maroon">Owner</Badge> : <Badge>Recruiter</Badge>} {m.pending && <Badge tone="amber">Invite sent</Badge>}</td>
+                  <td className="px-3 py-3">{m.role === 'owner' ? <Badge tone="brand">Owner</Badge> : <Badge>Recruiter</Badge>} {m.pending && <Badge tone="amber">Invite sent</Badge>}</td>
                   <td className="px-3 py-3 text-slate">{date(m.joinedAt)}</td>
                   <td className="px-5 py-3 text-end">
                     {m.role !== 'owner' && m.email !== auth?.email && (

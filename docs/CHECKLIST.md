@@ -6,7 +6,7 @@ Status as of the first delivery. ✅ done and covered by tests or verified in a 
 
 1. ⬜ **Upgrade to AdonisJS 7.** The app runs on AdonisJS 6 because the build environment couldn't fetch the v7 starter. `npm audit` reports advisories in `@adonisjs/http-server` (open redirect, regex resource consumption) that are fixed only in v7, which requires Node 24. The open redirect is mitigated in `container_bindings_middleware.ts` and nodemailer is patched via `overrides`; the regex issue is not mitigated. Upgrade path: the official v6→v7 guide; the code uses standard APIs throughout.
 2. ⬜ **Run the test suite against MySQL 8.** Everything was developed and tested on SQLite; migrations were reviewed for MySQL (index lengths, utf8mb4, FULLTEXT, UTC timestamps without offsets) but not executed on MySQL.
-3. ⬜ **Legal review** of Terms, Privacy and Cookies pages against Qatar's Personal Data Privacy Protection Law (Law No. 13 of 2016) and labour rules. Pages display a "template" notice until then (`LEGAL_NOTICE` in `inertia/components/static_page.tsx`).
+3. ⬜ **Legal review** of Terms, Privacy and Cookies pages against the data-protection laws of each country you operate in (UAE PDPL, Saudi PDPL, Qatar Law No. 13 of 2016, Bahrain PDPL, Oman PDPL, Kuwait CITRA rules) and labour rules. This matters more now that public profiles and public CV downloads exist. Pages display a "template" notice until then (`LEGAL_NOTICE` in `inertia/components/static_page.tsx`).
 4. ⬜ Configure SMTP, SPF/DKIM, backups, monitoring (see `DEPLOYMENT.md`).
 5. ⬜ Final brand name, logo and domain.
 
@@ -16,7 +16,7 @@ Status as of the first delivery. ✅ done and covered by tests or verified in a 
 - ✅ MySQL production config, SQLite dev/test config
 - ✅ 9 migrations, 31 models, foreign keys, unique constraints, search indexes, MySQL FULLTEXT
 - ✅ Roles (admin, employer owner, employer recruiter, candidate) with server-side middleware + Bouncer policies
-- ✅ Reference data: 8 Qatar municipalities + 29 districts, 22 industries, 20 categories, 126 skills, 18 languages
+- ✅ Reference data: 6 GCC countries, 45 cities, 31 districts, 22 industries, 20 categories, 137 skills, 18 languages
 - ✅ Environment validation; secrets only via `.env`
 
 ## Authentication and security
@@ -61,14 +61,26 @@ Status as of the first delivery. ✅ done and covered by tests or verified in a 
 - 🟡 Saved candidate searches store an "alerts" flag but no email alert sender yet
 - 🟡 Interview scheduling is a pipeline stage only (no calendar)
 
+## Gulf rebrand (hiremegulf.com)
+
+- ✅ Homepage rebuilt to the approved mockup: compact hero with skyline, recruiter banner, Find Talent / Find Jobs search, "Discover jobseekers" 2×3 grid with tabs, sort and Load More, Latest jobs sidebar, job-alert and safety cards, three-step strip, compact footer
+- ✅ Logo mark, skyline, hiring illustration and demo portraits taken from the mockup; green/navy theme across every page; fonts self-hosted
+- ✅ Country row (All Gulf, UAE, Saudi Arabia, Qatar, Kuwait, Oman, Bahrain) filters the homepage, job search and talent search
+- ✅ Public profile level, "Position wanted" and optional gender fields, public profile pages, public CV downloads for opted-in candidates
+- ✅ Find Talent (public), Career Tips (4 starter articles), Courses & Training (coming soon + interest form), Arabic (coming-soon notice), Help Centre, Accessibility
+- ✅ Multi-currency salaries per country
+- 🟡 Arabic interface not translated yet (the language link opens a notice page)
+- 🟡 Career tips are in code (`app/services/career_tips.ts`), not admin-editable
+- 🟡 Demo portraits are low resolution (cropped from the mockup); replace with real photos uploaded by candidates
+
 ## Public site
 
-- ✅ Homepage, job search with filters and shareable URLs, job details, related jobs, report job
+- ✅ Job search with filters and shareable URLs, job details, related jobs, report job
 - ✅ Employer directory and company pages, report employer
 - ✅ About, FAQ, Contact (with honeypot), Terms, Privacy, Cookies, Safety, For employers
 - ✅ SEO: server-rendered titles/descriptions, canonical URLs, `noindex` for filtered/expired pages, JobPosting JSON-LD with `validThrough`, sitemap (live jobs only), robots.txt
 - ✅ Responsive layouts checked at 390px and 1280px; skip links, focus styles, reduced motion
-- 🟡 Arabic/RTL: `lang`/`dir` on the document, logical CSS properties, Arabic-capable fonts; no translations or language switcher yet
+- 🟡 Arabic/RTL: `lang`/`dir` on the document, logical CSS properties, IBM Plex Sans Arabic bundled; no translations yet
 - 🟡 No server-side rendering (meta and structured data are server-rendered; page body is client-rendered)
 
 ## Admin
@@ -90,7 +102,7 @@ Status as of the first delivery. ✅ done and covered by tests or verified in a 
 
 ## Testing
 
-- ✅ 79 automated tests (unit + functional HTTP), all passing on SQLite
+- ✅ 87 automated tests (unit + functional HTTP), all passing on SQLite
 - ✅ Production build compiles; compiled app smoke-tested with CSP enabled
 - ⬜ MySQL test run (see above)
 - ⬜ End-to-end browser tests

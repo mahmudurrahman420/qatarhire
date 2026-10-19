@@ -5,7 +5,7 @@ test.group('Role-based access control', (group) => {
   group.each.setup(() => resetData())
 
   test('guests are redirected to login from protected areas', async ({ client }) => {
-    for (const url of ['/candidate', '/employer', '/admin', '/files/cvs/1']) {
+    for (const url of ['/candidate', '/employer', '/admin', '/candidate/privacy']) {
       const res = await client.get(url).redirects(0)
       res.assertStatus(302)
       res.assertHeader('location', '/login')

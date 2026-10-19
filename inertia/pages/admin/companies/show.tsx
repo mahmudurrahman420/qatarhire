@@ -26,7 +26,7 @@ export default function AdminCompany({ company, members, history, reports }: Pro
   return (
     <AppLayout>
       <Head title={company.name} />
-      <PageHeader title={company.name} back={{ href: '/admin/companies', label: 'Employer verification' }} actions={<><VerificationBadge status={company.verificationStatus} /><Link href={`/companies/${company.slug}`} className="text-sm text-maroon-700 hover:underline">Public page</Link></>} />
+      <PageHeader title={company.name} back={{ href: '/admin/companies', label: 'Employer verification' }} actions={<><VerificationBadge status={company.verificationStatus} /><Link href={`/companies/${company.slug}`} className="text-sm text-brand-700 hover:underline">Public page</Link></>} />
       <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
         <div className="flex flex-col gap-6">
           <Panel>
@@ -40,7 +40,7 @@ export default function AdminCompany({ company, members, history, reports }: Pro
             {company.description && <p className="mt-4 whitespace-pre-line border-t border-line pt-4 text-sm">{company.description}</p>}
           </Panel>
           <Panel title="Team" padded={false}>
-            <ul className="divide-y divide-line text-sm">{members.map((m) => <li key={m.id} className="flex justify-between px-5 py-2.5"><span>{m.fullName} <span className="text-slate">{m.email}</span></span><span className="flex gap-1">{m.role === 'owner' && <Badge tone="maroon">Owner</Badge>}{!m.emailVerified && <Badge tone="amber">Email unverified</Badge>}</span></li>)}</ul>
+            <ul className="divide-y divide-line text-sm">{members.map((m) => <li key={m.id} className="flex justify-between px-5 py-2.5"><span>{m.fullName} <span className="text-slate">{m.email}</span></span><span className="flex gap-1">{m.role === 'owner' && <Badge tone="brand">Owner</Badge>}{!m.emailVerified && <Badge tone="amber">Email unverified</Badge>}</span></li>)}</ul>
           </Panel>
           {reports.length > 0 && (
             <Panel title={`Reports (${reports.length})`} padded={false}>

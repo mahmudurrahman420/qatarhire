@@ -26,7 +26,11 @@ export default class extends BaseSchema {
       table.string('name', 120).notNullable()
       table.string('slug', 140).notNullable().unique()
       table.integer('parent_id').unsigned().nullable().references('locations.id').onDelete('SET NULL')
-      table.enum('kind', ['municipality', 'area']).notNullable().defaultTo('municipality')
+      table.enum('kind', ['country', 'city', 'area']).notNullable().defaultTo('city')
+      // ISO 3166-1 alpha-2, lowercase; set on every row so filters don't need to walk the tree
+      table.string('country_code', 2).notNullable().index()
+      // e.g. "Dubai, UAE" or "West Bay, Doha, Qatar"
+      table.string('display_name', 200).notNullable()
       table.boolean('is_active').notNullable().defaultTo(true)
       table.integer('sort_order').notNullable().defaultTo(0)
       table.timestamps(true, true)

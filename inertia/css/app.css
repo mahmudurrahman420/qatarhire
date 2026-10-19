@@ -4,22 +4,34 @@
 
 @theme {
   --font-sans: 'IBM Plex Sans', 'IBM Plex Sans Arabic', system-ui, sans-serif;
-  --font-display: 'Bricolage Grotesque', 'IBM Plex Sans Arabic', system-ui, sans-serif;
+  --font-display: 'Bricolage Grotesque Variable', 'Bricolage Grotesque', 'IBM Plex Sans Arabic', system-ui, sans-serif;
 
-  --color-maroon-50: #fbf2f4;
-  --color-maroon-100: #f5dfe5;
-  --color-maroon-200: #e9b9c6;
-  --color-maroon-500: #a62a4f;
-  --color-maroon-600: #8a1538;
-  --color-maroon-700: #72102e;
-  --color-maroon-800: #5a0d24;
+  /* brand green (buttons, links, active states) */
+  --color-brand-50: #eaf7ef;
+  --color-brand-100: #d2eedc;
+  --color-brand-200: #a6dbb9;
+  --color-brand-500: #14904b;
+  --color-brand-600: #0b7a3c;
+  --color-brand-700: #086536;
+  --color-brand-800: #064e2a;
 
-  --color-ink: #1b1e28;
-  --color-slate: #5c6474;
-  --color-line: #dfe2e8;
-  --color-pearl: #f6f7f9;
-  --color-dune: #e9e1d3;
-  --color-dune-50: #f7f3ec;
+  /* deep navy (headings, names, recruiter banner) */
+  --color-navy: #13205e;
+  --color-navy-900: #0c2350;
+
+  --color-mint: #ecf9f2;
+  --color-mint-200: #c9ecd9;
+  --color-sky-tag: #e6effc;
+  --color-sky-ink: #1e3a8a;
+  --color-sunrise: #fff6e8;
+  --color-sunrise-line: #fbe0b8;
+
+  --color-ink: #222a3f;
+  --color-slate: #5b6478;
+  --color-line: #e2e5ec;
+  --color-pearl: #f6f8fa;
+  --color-dune: #d9eee2;
+  --color-dune-50: #f1f9f4;
   --color-gulf: #0f6e6e;
   --color-gulf-50: #e6f2f2;
   --color-amber: #9a5b00;
@@ -41,12 +53,12 @@
     line-height: 1.55;
   }
   h1, h2, h3 {
-    @apply font-display text-ink;
+    @apply font-display text-navy;
     letter-spacing: -0.015em;
     line-height: 1.15;
   }
   :focus-visible {
-    outline: 2px solid var(--color-maroon-500);
+    outline: 2px solid var(--color-brand-500);
     outline-offset: 2px;
   }
   [dir='rtl'] body {
@@ -58,21 +70,6 @@
       transition-duration: 0.01ms !important;
     }
   }
-}
-
-/* The serrated edge from the Qatar flag: nine white points on maroon. Used once, under the hero. */
-.serrated-edge {
-  position: relative;
-}
-.serrated-edge::after {
-  content: '';
-  position: absolute;
-  inset-inline: 0;
-  bottom: -1px;
-  height: 22px;
-  background: var(--color-pearl);
-  -webkit-mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / 44px 100%;
-  mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / 44px 100%;
 }
 
 .prose-job p { margin: 0 0 0.8em; }

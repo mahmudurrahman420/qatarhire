@@ -4,6 +4,8 @@ import CandidateExperience from '#models/candidate_experience'
 import CandidateEducation from '#models/candidate_education'
 import CandidateCertification from '#models/candidate_certification'
 import Skill from '#models/skill'
+import Location from '#models/location'
+import { currencyFor } from '#shared/gulf'
 import Taxonomy from '#services/taxonomy'
 import UploadService, { UploadRejected } from '#services/upload_service'
 import { computeCompleteness, refreshCompleteness } from '#services/profile_completeness'
@@ -17,6 +19,11 @@ import {
   profileValidator,
   skillsValidator,
 } from '#validators/candidate'
+
+async function defaultCurrency(locationId: number | undefined) {
+  const loc = locationId ? await Location.find(locationId) : null
+  return currencyFor(loc?.countryCode)
+}
 
 const photoValidator = vine.compile(vine.object({ photo: vine.file({ size: '2mb', extnames: ['jpg', 'jpeg', 'png', 'webp'] }) }))
 
@@ -32,7 +39,7 @@ export default class ProfileController {
         fullName: auth.getUserOrFail().fullName,
         phone: profile.phone,
         contactEmail: profile.contactEmail,
-        photoUrl: profile.photoKey ? `/uploads/${profile.photoKey}` : null,
+        photoUrl: profile.photoUrl,
         skills: profile.skills.map((s) => s.name),
         languages: profile.languages.map((l) => ({ languageId: l.id, name: l.name, proficiency: l.$extras.pivot_proficiency })),
         cvs: profile.cvs.map(cvBrief),
@@ -52,6 +59,8 @@ export default class ProfileController {
     }
     profile.merge({
       headline: rest.headline ?? null,
+      desiredPosition: rest.desiredPosition ?? null,
+      gender: rest.gender ?? null,
       currentJobTitle: rest.currentJobTitle ?? null,
       summary: rest.summary ?? null,
       phone: rest.phone ?? null,
@@ -63,6 +72,7 @@ export default class ProfileController {
       yearsExperience: rest.yearsExperience ?? null,
       educationLevel: rest.educationLevel ?? null,
       expectedSalary: rest.expectedSalary ?? null,
+      expectedSalaryCurrency: rest.expectedSalary ? (rest.expectedSalaryCurrency ?? (await defaultCurrency(rest.preferredLocationId ?? rest.currentLocationId))) : null,
       availability: rest.availability ?? null,
       noticePeriodDays: rest.noticePeriodDays ?? null,
       linkedinUrl: rest.linkedinUrl ?? null,

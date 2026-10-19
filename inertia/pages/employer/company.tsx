@@ -34,7 +34,7 @@ export default function CompanyPage({ company, verificationHistory, industries, 
   return (
     <AppLayout>
       <Head title="Company profile" />
-      <PageHeader title="Company profile" description={<>Shown on your <Link href={`/companies/${company.slug}`} className="text-maroon-700 underline">public company page</Link> and every job you post.</>} />
+      <PageHeader title="Company profile" description={<>Shown on your <Link href={`/companies/${company.slug}`} className="text-brand-700 underline">public company page</Link> and every job you post.</>} />
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
         <Panel>
           <form className="grid gap-4 sm:grid-cols-2" onSubmit={(e) => { e.preventDefault(); save() }}>
@@ -56,11 +56,11 @@ export default function CompanyPage({ company, verificationHistory, industries, 
             <SelectField label="Location" placeholder="Choose" value={form.data.locationId} onChange={(e) => form.setData('locationId', e.target.value)} options={locations.map((m) => ({ value: m.id, label: m.name }))} />
             <TextField label="Website" optional type="url" placeholder="https://" value={form.data.website} onChange={(e) => form.setData('website', e.target.value)} error={form.errors.website} />
             <TextField wrapperClass="sm:col-span-2" label="Address" optional value={form.data.address} onChange={(e) => form.setData('address', e.target.value)} error={form.errors.address} />
-            <TextArea wrapperClass="sm:col-span-2" label="About the company" optional rows={6} value={form.data.description} onChange={(e) => form.setData('description', e.target.value)} error={form.errors.description} hint="What you do, how many people you employ in Qatar, what it's like to work there." />
+            <TextArea wrapperClass="sm:col-span-2" label="About the company" optional rows={6} value={form.data.description} onChange={(e) => form.setData('description', e.target.value)} error={form.errors.description} hint="What you do, how many people you employ in the Gulf, what it's like to work there." />
             <TextField label="Contact person" value={form.data.contactName} onChange={(e) => form.setData('contactName', e.target.value)} error={form.errors.contactName} required hint="Private. Used by our team only." />
             <TextField label="Contact email" type="email" value={form.data.contactEmail} onChange={(e) => form.setData('contactEmail', e.target.value)} error={form.errors.contactEmail} required />
             <TextField label="Business telephone" optional type="tel" value={form.data.phone} onChange={(e) => form.setData('phone', e.target.value)} error={form.errors.phone} />
-            <TextField label="Commercial registration (CR) number" optional value={form.data.crNumber} onChange={(e) => form.setData('crNumber', e.target.value)} error={form.errors.crNumber} />
+            <TextField label="Trade licence / CR number" optional value={form.data.crNumber} onChange={(e) => form.setData('crNumber', e.target.value)} error={form.errors.crNumber} />
             <div className="sm:col-span-2"><Button type="submit" loading={form.processing}>Save company profile</Button></div>
           </form>
         </Panel>

@@ -1,8 +1,7 @@
 import { DateTime } from 'luxon'
+import { PLATFORM_TZ } from '#shared/gulf'
 
-export const QATAR_TZ = 'Asia/Qatar'
-
-/** Today's date in Qatar as YYYY-MM-DD. Deadlines are inclusive of this day. */
-export function qatarToday() {
-  return DateTime.now().setZone(QATAR_TZ).toISODate()!
+/** Today's date (YYYY-MM-DD) in the Gulf's westernmost time zone. Deadlines are inclusive of this day. */
+export function gulfToday() {
+  return DateTime.now().setZone(PLATFORM_TZ).toISODate()!
 }

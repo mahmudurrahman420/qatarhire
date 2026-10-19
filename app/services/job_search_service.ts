@@ -2,6 +2,7 @@ import { DateTime } from 'luxon'
 import db from '@adonisjs/lucid/services/db'
 import Job from '#models/job'
 import { EmploymentType, WorkArrangement, EducationLevel, EducationRank, SortOptionsJobs } from '#shared/enums'
+import { Currencies, countryBySlug } from '#shared/gulf'
 import { keywordTerms, likeTerm, locationIdsForSlug, toArray, toInt } from '#services/search_helpers'
 
 export type JobFilters = {
@@ -15,6 +16,7 @@ export type JobFilters = {
   education: string
   experience: number | null
   salary: number | null
+  currency: string
   posted: number | null
   sort: string
   page: number
@@ -33,6 +35,7 @@ export function parseJobFilters(input: Record<string, unknown>): JobFilters {
     education: pick(input.education, EducationLevel.values),
     experience: toInt(input.experience),
     salary: toInt(input.salary),
+    currency: Currencies.includes(String(input.currency) as never) ? String(input.currency) : '',
     posted: toInt(input.posted),
     sort: pick(input.sort, SortOptionsJobs.values) || 'relevance',
     page: Math.max(1, toInt(input.page) ?? 1),
@@ -75,8 +78,13 @@ export default class JobSearchService {
     }
     if (f.experience !== null) query.where('jobs.min_experience', '<=', f.experience)
     if (f.salary !== null) {
-      // salary filters use stored values even when hidden from display; values are never revealed
-      query.whereRaw('COALESCE(jobs.salary_max, jobs.salary_min) >= ?', [f.salary])
+      // salary filters use stored values even when hidden from display; values are never revealed.
+      // Amounts only compare within one currency (chosen, or the selected country's); without one the filter is ignored.
+      const currency = f.currency || countryBySlug(f.location)?.currency
+      if (currency) {
+        query.where('jobs.salary_currency', currency)
+        query.whereRaw('COALESCE(jobs.salary_max, jobs.salary_min) >= ?', [f.salary])
+      }
     }
     if (f.posted) query.where('jobs.published_at', '>=', DateTime.now().minus({ days: f.posted }).toSQL({ includeOffset: false })!)
 

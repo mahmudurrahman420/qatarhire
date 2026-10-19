@@ -1,6 +1,6 @@
-# QatarHire — Architecture
+# hiremegulf.com — Architecture
 
-Working name **QatarHire** (rename via `APP_NAME` and `inertia/lib/brand.ts`).
+Gulf-wide talent marketplace (originally built as a Qatar-only portal, then rebranded and extended to all six GCC countries).
 
 ## 1. Repository inspection (Phase 1 findings)
 
@@ -56,8 +56,8 @@ Boundaries enforced on the server (never only in the UI):
 
 1. **Role gate** — route groups use `role:admin|employer|candidate` middleware.
 2. **Tenant isolation** — every employer query is scoped by `company_id` of the signed-in user's membership. Policies re-check that the target job/application belongs to that company (IDOR protection). Records are looked up by ID *and* company, so foreign IDs return 404.
-3. **Candidate privacy** — profiles default to `private`. Only `discoverable` profiles appear in search, and only to employers whose company is `verified` (and, when billing is on, entitled).
-4. **Contact and CV consent** — contact details and CV files are visible to an employer only when (a) the candidate applied to one of that company's jobs, or (b) the candidate opted in (`contact_sharing = 'verified_employers'`, `cv_searchable = true`). Withdrawing consent takes effect immediately because checks run on every request.
+3. **Candidate privacy** — profiles default to `private`. Three levels: `private` (only employers applied to), `discoverable` (verified employers' search; first name + initial, no photo), `public` (homepage, Find Talent and profile pages for anyone, with full name, photo, gender, city, experience and skills). Contact details never appear on cards.
+4. **Contact and CV consent** — contact details are visible to an employer only when the candidate applied to that company, or opted in (`contact_sharing = 'verified_employers'`). CVs: attached to an application, or the primary CV when `cv_searchable = true` — for verified employers on discoverable profiles, and for **anyone, signed in or not**, on public profiles (owner's explicit choice, with a warning that CVs contain contact details). Anonymous downloads are rate-limited and logged. Withdrawing consent takes effect on the next request.
 5. **Private files** — CVs are stored on the private disk under random keys; downloads go through `GET /files/cvs/:id` which authorises, logs to `candidate_access_logs` and `audit_logs`, and streams with `Content-Disposition: attachment`. No storage path is ever sent to the browser.
 6. **Uploads** — CVs: PDF/DOCX only, 5 MB max, magic-byte check (not just extension), optional ClamAV scan (`CLAMAV_HOST`). Images: JPG/PNG/WebP, 2 MB.
 7. **Rate limits** — login, registration, password reset, applications, CV downloads, candidate search.
@@ -87,11 +87,11 @@ queued_jobs (database queue), rate_limits (limiter store)
 ### Design decisions
 
 - **Privacy settings live on `candidate_profiles`** (`visibility`, `contact_sharing`, `cv_searchable`) rather than a separate table: they are 1:1, always read with the profile, and filtered on in search, so a join would only cost performance.
-- **Salaries** are stored as integers in QAR per month (`salary_min`, `salary_max`, `expected_salary`). No floats, one currency, consistent comparisons. A `salary_visible` flag controls display; filters still use hidden values but never reveal them.
-- **Timestamps** are stored in UTC and rendered in `Asia/Qatar` (UTC+3) on the client.
+- **Salaries** are whole units per month with a currency code (`jobs.salary_currency`, `candidate_profiles.expected_salary_currency`). A job's currency always follows its country (AED, SAR, QAR, KWD, OMR, BHD). Salary filters only compare within one currency (chosen, or the selected country's); without a currency the job salary filter is ignored. Hidden salaries are filterable but never revealed.
+- **Timestamps** are stored in UTC. Deadlines are inclusive in UTC+3 (the westernmost Gulf zone), so a job stays open until midnight everywhere; JobPosting `validThrough` uses the job country's offset.
 - **Duplicate applications** are prevented by a unique index on `(job_id, candidate_profile_id)` plus a friendly pre-check. A withdrawn application cannot be resubmitted (product decision; documented so it can be revisited).
 - **Soft deletes** are used only on `jobs` (`archived` status) and `companies` (`suspended`); candidates who delete their account are hard-deleted with their files, as privacy requires. Audit rows keep the user id but no personal content.
-- **Taxonomy** (industries, categories, Qatar locations, skills, languages) is admin-managed data, not enums, so it can grow without deployments. Locations are Qatar municipalities with key districts as children.
+- **Taxonomy** (industries, categories, Qatar locations, skills, languages) is admin-managed data, not enums, so it can grow without deployments. Locations are a tree: country → city → district, each row carrying `country_code` and a `display_name` ("Business Bay, Dubai, UAE") so filters and labels never need to walk the tree. A country slug matches everything inside it.
 - **Search** uses indexed columns and `LIKE` keyword matching through `CandidateSearchService` / `JobSearchService`. On MySQL a FULLTEXT index is added for keyword relevance. Controllers only talk to the service interface, so swapping in Meilisearch/OpenSearch later means replacing one class plus an indexing listener.
 - **Billing** tables and an `EntitlementService` exist but billing is disabled (`billing_enabled = false`). While disabled every check returns "allowed". No payment provider is integrated or simulated.
 - **CV parsing** is designed but not implemented: `candidate_cvs.parse_status` and `parsed_data` (JSON) are reserved so a parser can store extracted data for the candidate to review before it touches the profile.

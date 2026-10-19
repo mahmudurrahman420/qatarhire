@@ -21,6 +21,8 @@ const HomeController = () => import('#controllers/public/home_controller')
 const JobsController = () => import('#controllers/public/jobs_controller')
 const CompaniesController = () => import('#controllers/public/companies_controller')
 const PagesController = () => import('#controllers/public/pages_controller')
+const TalentController = () => import('#controllers/public/talent_controller')
+const ContentController = () => import('#controllers/public/content_controller')
 const SeoController = () => import('#controllers/public/seo_controller')
 const ReportsController = () => import('#controllers/public/reports_controller')
 
@@ -56,6 +58,14 @@ const AdminAudit = () => import('#controllers/admin/audit_controller')
 
 /* ---------------------------------------------------------------- public */
 router.get('/', [HomeController, 'index'])
+router.get('/talent/feed', [HomeController, 'feed']).use(candidateSearchThrottle)
+router.get('/talent', [TalentController, 'index']).use(candidateSearchThrottle)
+router.get('/talent/:id', [TalentController, 'show']).where('id', router.matchers.number()).use(candidateSearchThrottle)
+router.get('/career-tips', [ContentController, 'tips'])
+router.get('/career-tips/:slug', [ContentController, 'tip'])
+router.get('/courses', [ContentController, 'courses'])
+router.post('/courses/interest', [ContentController, 'courseInterest']).use(publicFormThrottle)
+router.get('/arabic', [ContentController, 'arabic'])
 router.get('/jobs', [JobsController, 'index'])
 router.get('/jobs/:slug', [JobsController, 'show'])
 router.get('/companies', [CompaniesController, 'index'])
@@ -68,7 +78,7 @@ router.get('/sitemap.xml', [SeoController, 'sitemap'])
 router.get('/health', async () => ({ ok: true }))
 router
   .get('/:page', [PagesController, 'show'])
-  .where('page', /^(about|faq|terms|privacy|cookies|safety|employers)$/)
+  .where('page', /^(about|faq|terms|privacy|cookies|safety|employers|accessibility|help)$/)
 
 /* ---------------------------------------------------------------- auth (guests) */
 router
@@ -89,6 +99,8 @@ router
   .use(middleware.guest())
 
 router.get('/verify-email/:token', [EmailVerificationController, 'verify'])
+// CV downloads authorise per request; signed-out visitors may fetch public CVs only
+router.get('/files/cvs/:id', [CvDownloadsController, 'show']).where('id', router.matchers.number()).use(cvDownloadThrottle)
 
 /* ---------------------------------------------------------------- signed-in (any role) */
 router
@@ -103,7 +115,6 @@ router
     router.get('/notifications', [AccountController, 'notifications'])
     router.post('/notifications/read-all', [AccountController, 'markAllRead'])
     router.post('/notifications/:id/read', [AccountController, 'markRead']).where('id', router.matchers.number())
-    router.get('/files/cvs/:id', [CvDownloadsController, 'show']).where('id', router.matchers.number()).use(cvDownloadThrottle)
   })
   .use(middleware.auth())
 
@@ -168,6 +179,7 @@ router
     router.get('/candidates/saved', [CandidatesController, 'saved'])
     router.get('/candidates/:id', [CandidatesController, 'show']).where('id', router.matchers.number()).use(candidateSearchThrottle)
     router.post('/candidates/:id/save', [CandidatesController, 'save'])
+    router.post('/candidates/:id/toggle-save', [CandidatesController, 'toggleSave'])
     router.delete('/saved-candidates/:savedId', [CandidatesController, 'unsave'])
     router.post('/saved-searches', [CandidatesController, 'storeSearch'])
     router.delete('/saved-searches/:id', [CandidatesController, 'destroySearch'])

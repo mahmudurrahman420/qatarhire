@@ -77,7 +77,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             aria-current={active(i) ? 'page' : undefined}
             className={cn(
               'flex items-center gap-3 rounded-ctl px-3 py-2 text-sm transition-colors',
-              active(i) ? 'bg-maroon-50 font-medium text-maroon-700' : 'text-slate hover:bg-pearl hover:text-ink'
+              active(i) ? 'bg-brand-50 font-medium text-brand-700' : 'text-slate hover:bg-pearl hover:text-ink'
             )}
           >
             <i.icon className="size-4 shrink-0" aria-hidden />
@@ -117,7 +117,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           <Link href="/notifications" className="relative rounded-ctl p-2 text-slate hover:bg-white" aria-label={`Notifications (${auth.unreadNotifications} unread)`}>
             <Bell className="size-5" />
             {auth.unreadNotifications > 0 && (
-              <span className="absolute -end-0.5 -top-0.5 grid min-w-4 place-items-center rounded-full bg-maroon-600 px-1 text-[10px] font-semibold text-white">
+              <span className="absolute -end-0.5 -top-0.5 grid min-w-4 place-items-center rounded-full bg-brand-600 px-1 text-[10px] font-semibold text-white">
                 {auth.unreadNotifications > 9 ? '9+' : auth.unreadNotifications}
               </span>
             )}

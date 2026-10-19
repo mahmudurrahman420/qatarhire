@@ -44,7 +44,7 @@ export default class RegisterController {
     }
     return inertia.render('auth/register_employer', {
       industries: await Industry.query().where('is_active', true).orderBy('sort_order').select('id', 'name'),
-      locations: await Location.query().where('kind', 'municipality').where('is_active', true).orderBy('sort_order').select('id', 'name'),
+      locations: (await Location.query().where('kind', 'city').where('is_active', true).orderBy('country_code').orderBy('sort_order')).map((l) => ({ id: l.id, name: l.displayName })),
     })
   }
 

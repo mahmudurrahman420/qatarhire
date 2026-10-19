@@ -11,10 +11,13 @@ import { Availability, EducationLevel, SortOptionsCandidates, WorkAuthorization 
 import { toQuery } from '~/lib/format'
 import type { CandidateCard, Paginated, Taxonomy } from '~/lib/types'
 import { cn } from '~/lib/cn'
+import { LocationSlugOptions } from '~/lib/locations'
+import { GulfCountries } from '#shared/gulf'
+import { Gender } from '#shared/enums'
 
 type Filters = {
   q: string; title: string; skills: string[]; skillMode: 'all' | 'any'; industry: string; expMin: number | null; expMax: number | null
-  education: string; certification: string; languages: string[]; location: string; preferred: string; salaryMin: number | null; salaryMax: number | null
+  education: string; certification: string; languages: string[]; location: string; preferred: string; salaryMin: number | null; salaryMax: number | null; currency: string; gender: string
   availability: string[]; noticeMax: number | null; authorization: string[]; updated: number | null; completeness: number | null; hasCv: boolean; sort: string; page: number
 }
 type Props = {
@@ -71,13 +74,7 @@ export default function CandidateSearch({ allowed, companyStatus, filters, resul
     <label className="flex flex-col gap-1.5 text-sm font-medium">
       {label}
       <select className={cn(controlClass, 'h-10 font-normal')} value={value} onChange={(e) => onChange(e.target.value)}>
-        <option value="">Any</option>
-        {taxonomy.locations.map((m) => (
-          <optgroup key={m.slug} label={m.name}>
-            <option value={m.slug}>All of {m.name}</option>
-            {m.areas.map((a) => <option key={a.slug} value={a.slug}>{a.name}</option>)}
-          </optgroup>
-        ))}
+        <LocationSlugOptions locations={taxonomy.locations} anyLabel="Any" />
       </select>
     </label>
   )
@@ -95,8 +92,8 @@ export default function CandidateSearch({ allowed, companyStatus, filters, resul
           max={15}
         />
         <div className="flex gap-4 text-sm">
-          <label className="flex items-center gap-1.5"><input type="radio" className="accent-maroon-600" checked={draft.skillMode === 'all'} onChange={() => set('skillMode', 'all')} /> Has all</label>
-          <label className="flex items-center gap-1.5"><input type="radio" className="accent-maroon-600" checked={draft.skillMode === 'any'} onChange={() => set('skillMode', 'any')} /> Has any</label>
+          <label className="flex items-center gap-1.5"><input type="radio" className="accent-brand-600" checked={draft.skillMode === 'all'} onChange={() => set('skillMode', 'all')} /> Has all</label>
+          <label className="flex items-center gap-1.5"><input type="radio" className="accent-brand-600" checked={draft.skillMode === 'any'} onChange={() => set('skillMode', 'any')} /> Has any</label>
         </div>
       </div>
       <label className="flex flex-col gap-1.5 text-sm font-medium">
@@ -122,7 +119,11 @@ export default function CandidateSearch({ allowed, companyStatus, filters, resul
       {locationSelect(draft.location, (v) => set('location', v), 'Current location')}
       {locationSelect(draft.preferred, (v) => set('preferred', v), 'Wants to work in')}
       <fieldset className="grid grid-cols-2 gap-2">
-        <legend className="mb-1.5 text-sm font-medium">Expected salary (QAR / month)</legend>
+        <legend className="mb-1.5 text-sm font-medium">Expected monthly salary</legend>
+        <select aria-label="Salary currency" className={cn(controlClass, 'col-span-2 h-10')} value={draft.currency} onChange={(e) => set('currency', e.target.value)}>
+          <option value="">Currency of the selected country</option>
+          {GulfCountries.map((c) => <option key={c.currency} value={c.currency}>{c.currency} ({c.name})</option>)}
+        </select>
         <input aria-label="Minimum salary" type="number" min={0} step={500} placeholder="From" className={cn(controlClass, 'h-10')} value={sv(draft.salaryMin)} onChange={(e) => set('salaryMin', n(e.target.value))} />
         <input aria-label="Maximum salary" type="number" min={0} step={500} placeholder="To" className={cn(controlClass, 'h-10')} value={sv(draft.salaryMax)} onChange={(e) => set('salaryMax', n(e.target.value))} />
         <p className="col-span-2 text-[12px] text-slate">Only candidates who shared an expected salary.</p>
@@ -167,6 +168,13 @@ export default function CandidateSearch({ allowed, companyStatus, filters, resul
           <option value="90">90% or more</option>
         </select>
       </label>
+      <label className="flex flex-col gap-1.5 text-sm font-medium">
+        Gender
+        <select className={cn(controlClass, 'h-10 font-normal')} value={draft.gender} onChange={(e) => set('gender', e.target.value)}>
+          <option value="">Any</option>
+          {Gender.values.map((g) => <option key={g} value={g}>{Gender.label(g)}</option>)}
+        </select>
+      </label>
       <Checkbox label="Has a downloadable CV" checked={draft.hasCv} onChange={(e) => set('hasCv', e.target.checked)} />
       <div className="sticky bottom-0 flex gap-2 bg-pearl py-2 lg:bg-transparent">
         <Button type="submit" className="flex-1">Apply filters</Button>
@@ -179,7 +187,7 @@ export default function CandidateSearch({ allowed, companyStatus, filters, resul
   return (
     <AppLayout>
       <Head title="Search candidates" />
-      <PageHeader title="Search candidates" description="Candidates who chose to be discoverable by verified employers. Contact details and CVs appear on a profile only where the candidate allows it." />
+      <PageHeader title="Search candidates" description="Candidates who chose to be discoverable by verified employers, plus public profiles. Contact details and CVs appear on a profile only where the candidate allows it." />
 
       <form onSubmit={submit} className="mb-6 flex gap-2" role="search">
         <label className="relative flex-1">
@@ -221,7 +229,7 @@ export default function CandidateSearch({ allowed, companyStatus, filters, resul
               <ul className="divide-y divide-line">
                 {savedSearches.map((s) => (
                   <li key={s.id} className="flex items-center justify-between px-5 py-2.5">
-                    <Link href={`/employer/candidates?${qs(s.filters as Partial<Filters>)}`} className="text-sm font-medium hover:text-maroon-700">{s.name}</Link>
+                    <Link href={`/employer/candidates?${qs(s.filters as Partial<Filters>)}`} className="text-sm font-medium hover:text-brand-700">{s.name}</Link>
                     <Button size="sm" variant="quiet" aria-label={`Delete ${s.name}`} onClick={() => router.delete(`/employer/saved-searches/${s.id}`, { preserveScroll: true })}><Trash2 className="size-4" /></Button>
                   </li>
                 ))}
@@ -242,7 +250,7 @@ function SaveSearchModal({ open, onClose, query }: { open: boolean; onClose: () 
   return (
     <Modal open={open} onClose={onClose} title="Save this search">
       <form className="flex flex-col gap-4" onSubmit={(e) => { e.preventDefault(); form.transform((d) => ({ ...d, query })); form.post('/employer/saved-searches', { preserveScroll: true, onSuccess: () => { form.reset(); onClose() } }) }}>
-        <TextField label="Name" placeholder="e.g. MEP engineers, Lusail, immediate" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} error={form.errors.name} required />
+        <TextField label="Name" placeholder="e.g. MEP engineers, Dubai, immediate" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} error={form.errors.name} required />
         <p className="text-sm text-slate">Saved searches are private to you and re-run with the latest candidates each time.</p>
         <div className="flex justify-end gap-2"><Button type="button" variant="quiet" onClick={onClose}>Cancel</Button><Button type="submit" loading={form.processing}>Save search</Button></div>
       </form>

@@ -3,8 +3,8 @@ import vine from '@vinejs/vine'
 import env from '#start/env'
 import Mailer from '#services/mailer'
 
-const PAGES = ['about', 'faq', 'terms', 'privacy', 'cookies', 'safety', 'employers'] as const
-const TITLES: Record<string, string> = { about: 'About us', faq: 'Questions and answers', terms: 'Terms of service', privacy: 'Privacy policy', cookies: 'Cookies', safety: 'Job seeker and employer safety', employers: 'Hire in Qatar' }
+const PAGES = ['about', 'faq', 'terms', 'privacy', 'cookies', 'safety', 'employers', 'accessibility', 'help'] as const
+const TITLES: Record<string, string> = { about: 'About us', faq: 'Questions and answers', terms: 'Terms of service', privacy: 'Privacy policy', cookies: 'Cookies', safety: 'Job seeker and employer safety', employers: 'Hire in the Gulf', accessibility: 'Accessibility', help: 'Help Centre' }
 
 const contactValidator = vine.compile(
   vine.object({
@@ -21,7 +21,7 @@ export default class PagesController {
   async show({ inertia, params, response }: HttpContext) {
     const page = String(params.page)
     if (!(PAGES as readonly string[]).includes(page)) return response.notFound()
-    return inertia.render(`public/pages/${page}`, { supportEmail: env.get('SUPPORT_EMAIL', env.get('MAIL_FROM_ADDRESS')), meta: { title: TITLES[page] } })
+    return inertia.render(`public/pages/${page === 'help' ? 'faq' : page}`, { supportEmail: env.get('SUPPORT_EMAIL', env.get('MAIL_FROM_ADDRESS')), meta: { title: TITLES[page] } })
   }
 
   async contact({ inertia }: HttpContext) {

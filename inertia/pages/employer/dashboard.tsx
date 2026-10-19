@@ -51,7 +51,7 @@ export default function EmployerDashboard({ company, jobCounts, applicationCount
           <div className="flex h-36 items-end gap-[3px]" role="img" aria-label={`${last30} applications in the last 30 days`}>
             {applicationsPerDay.map((d) => (
               <div key={d.date} className="group relative flex-1">
-                <div className="w-full rounded-t-[3px] bg-maroon-600/85" style={{ height: `${Math.max(d.count ? 6 : 2, (d.count / max) * 136)}px`, opacity: d.count ? 1 : 0.15 }} />
+                <div className="w-full rounded-t-[3px] bg-brand-600/85" style={{ height: `${Math.max(d.count ? 6 : 2, (d.count / max) * 136)}px`, opacity: d.count ? 1 : 0.15 }} />
                 <span className="pointer-events-none absolute bottom-full start-1/2 mb-1 hidden -translate-x-1/2 whitespace-nowrap rounded bg-ink px-1.5 py-0.5 text-[11px] text-white group-hover:block">
                   {date(d.date, { day: 'numeric', month: 'short' })}: {d.count}
                 </span>
@@ -85,7 +85,7 @@ export default function EmployerDashboard({ company, jobCounts, applicationCount
         </Panel>
       </div>
 
-      <Panel title="Active jobs" className="mt-6" padded={false} actions={<Link href="/employer/jobs" className="text-sm text-maroon-700 hover:underline">All jobs</Link>}>
+      <Panel title="Active jobs" className="mt-6" padded={false} actions={<Link href="/employer/jobs" className="text-sm text-brand-700 hover:underline">All jobs</Link>}>
         {topJobs.length ? (
           <table className="w-full text-sm">
             <thead className="text-start text-[13px] text-slate">
@@ -94,7 +94,7 @@ export default function EmployerDashboard({ company, jobCounts, applicationCount
             <tbody>
               {topJobs.map((j) => (
                 <tr key={j.id} className="border-b border-line last:border-b-0">
-                  <td className="px-5 py-2.5"><Link href={`/employer/jobs/${j.id}/applicants`} className="font-medium hover:text-maroon-700">{j.title}</Link></td>
+                  <td className="px-5 py-2.5"><Link href={`/employer/jobs/${j.id}/applicants`} className="font-medium hover:text-brand-700">{j.title}</Link></td>
                   <td className="px-3 py-2.5 text-end tabular-nums">{j.views}</td>
                   <td className="px-3 py-2.5 text-end tabular-nums">{j.applicants}</td>
                   <td className="px-5 py-2.5 text-end"><JobStatusBadge status={j.status} /></td>

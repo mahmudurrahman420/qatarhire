@@ -16,7 +16,7 @@ export function StaticPage({ title, intro, sections, notice, aside }: { title: s
           {sections.map((s) => (
             <section key={s.heading} className="mt-9">
               <h2 className="text-xl">{s.heading}</h2>
-              <div className="mt-2 space-y-3 leading-relaxed text-ink/90 [&_a]:text-maroon-700 [&_a]:underline [&_li]:ms-5 [&_li]:list-disc">{s.body}</div>
+              <div className="mt-2 space-y-3 leading-relaxed text-ink/90 [&_a]:text-brand-700 [&_a]:underline [&_li]:ms-5 [&_li]:list-disc">{s.body}</div>
             </section>
           ))}
         </article>
@@ -26,4 +26,4 @@ export function StaticPage({ title, intro, sections, notice, aside }: { title: s
   )
 }
 
-export const LEGAL_NOTICE = 'This page is a starting template. It must be reviewed and adapted by a qualified lawyer in Qatar before the platform launches.'
+export const LEGAL_NOTICE = 'This page is a starting template. It must be reviewed and adapted by qualified lawyers in each Gulf country you operate in before the platform launches.'

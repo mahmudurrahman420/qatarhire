@@ -9,7 +9,7 @@ export default function Billing({ billingEnabled }: { billingEnabled: boolean })
       <PageHeader title="Billing" />
       <Panel>
         {billingEnabled ? (
-          <p className="text-sm text-slate">Paid plans are being introduced. Online payment isn't available in your account yet — <Link href="/contact" className="text-maroon-700 underline">contact us</Link> to discuss a plan.</p>
+          <p className="text-sm text-slate">Paid plans are being introduced. Online payment isn't available in your account yet — <Link href="/contact" className="text-brand-700 underline">contact us</Link> to discuss a plan.</p>
         ) : (
           <>
             <p className="font-medium">All features are currently free.</p>

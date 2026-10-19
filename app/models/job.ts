@@ -1,5 +1,5 @@
 import { DateTime } from 'luxon'
-import { column, belongsTo, hasMany, manyToMany, scope } from '@adonisjs/lucid/orm'
+import { column, belongsTo, hasMany, manyToMany, scope, beforeSave } from '@adonisjs/lucid/orm'
 import type { BelongsTo, HasMany, ManyToMany } from '@adonisjs/lucid/types/relations'
 import type { ModelQueryBuilderContract } from '@adonisjs/lucid/types/model'
 import AppBaseModel, { toBool } from '#models/app_base_model'
@@ -9,7 +9,8 @@ import Industry from '#models/industry'
 import Location from '#models/location'
 import Skill from '#models/skill'
 import Application from '#models/application'
-import { qatarToday } from '#services/dates'
+import { gulfToday } from '#services/dates'
+import { currencyFor } from '#shared/gulf'
 import type {
   ApplicationMethodValue,
   EducationLevelValue,
@@ -69,6 +70,9 @@ export default class Job extends AppBaseModel {
 
   @column()
   declare salaryMax: number | null
+
+  @column()
+  declare salaryCurrency: string
 
   @column({ consume: toBool })
   declare salaryVisible: boolean
@@ -133,6 +137,16 @@ export default class Job extends AppBaseModel {
   @hasMany(() => Application)
   declare applications: HasMany<typeof Application>
 
+  /** Salary currency always follows the job's country. */
+  @beforeSave()
+  static async setCurrency(job: Job) {
+    if (job.locationId && (job.$isNew || job.$dirty.locationId !== undefined)) {
+      // same connection/transaction as the save, so SQLite's single writer can't deadlock
+      const loc = await Location.query(job.$trx ? { client: job.$trx } : {}).where('id', job.locationId).first()
+      if (loc) job.salaryCurrency = currencyFor(loc.countryCode)
+    }
+  }
+
   /**
    * Jobs visible to the public: published, not past deadline,
    * and owned by a company that is not suspended or rejected.
@@ -140,12 +154,12 @@ export default class Job extends AppBaseModel {
   static live = scope((query: ModelQueryBuilderContract<typeof Job>) => {
     query
       .where('jobs.status', 'published')
-      .where((q) => q.whereNull('jobs.deadline').orWhere('jobs.deadline', '>=', qatarToday()))
+      .where((q) => q.whereNull('jobs.deadline').orWhere('jobs.deadline', '>=', gulfToday()))
       .whereHas('company', (c) => c.whereIn('verification_status', ['pending', 'verified']))
   })
 
   get isExpired() {
-    return this.deadline !== null && this.deadline.toISODate()! < qatarToday()
+    return this.deadline !== null && this.deadline.toISODate()! < gulfToday()
   }
 
   /** Accepting applications right now. */
@@ -156,7 +170,7 @@ export default class Job extends AppBaseModel {
   /** Salary as shown publicly (null when hidden or absent). */
   get publicSalary() {
     if (!this.salaryVisible || (this.salaryMin === null && this.salaryMax === null)) return null
-    return { min: this.salaryMin, max: this.salaryMax, currency: 'QAR', period: 'month' as const }
+    return { min: this.salaryMin, max: this.salaryMax, currency: this.salaryCurrency, period: 'month' as const }
   }
 
   serializeExtras() {

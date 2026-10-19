@@ -15,6 +15,7 @@ import Application from '#models/application'
 import type {
   AvailabilityValue,
   ContactSharingValue,
+  GenderValue,
   EducationLevelValue,
   ProfileVisibilityValue,
   WorkAuthorizationValue,
@@ -29,6 +30,12 @@ export default class CandidateProfile extends AppBaseModel {
 
   @column()
   declare headline: string | null
+
+  @column()
+  declare desiredPosition: string | null
+
+  @column()
+  declare gender: GenderValue | null
 
   @column()
   declare currentJobTitle: string | null
@@ -67,6 +74,9 @@ export default class CandidateProfile extends AppBaseModel {
 
   @column()
   declare expectedSalary: number | null
+
+  @column()
+  declare expectedSalaryCurrency: string | null
 
   @column()
   declare availability: AvailabilityValue | null
@@ -150,7 +160,17 @@ export default class CandidateProfile extends AppBaseModel {
     if (changed.length) profile.profileUpdatedAt = DateTime.now()
   }
 
+  /** Visible to verified employers in candidate search (public profiles included). */
   get isDiscoverable() {
-    return this.visibility === 'discoverable'
+    return this.visibility === 'discoverable' || this.visibility === 'public'
+  }
+
+  /** Visible to everyone, signed in or not. */
+  get isPublic() {
+    return this.visibility === 'public'
+  }
+
+  get photoUrl() {
+    return this.photoKey ? `/uploads/${this.photoKey}` : null
   }
 }

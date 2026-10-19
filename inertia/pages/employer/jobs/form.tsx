@@ -6,7 +6,9 @@ import { PageHeader, Panel } from '~/components/ui/misc'
 import { JobStatusBadge } from '~/components/status'
 import { TagInput } from '~/components/tag_input'
 import { EducationLevel, EmploymentType, WorkArrangement } from '#shared/enums'
+import { countryByCode } from '#shared/gulf'
 import type { Taxonomy } from '~/lib/types'
+import { locationIdOptions } from '~/lib/locations'
 
 type Job = {
   id: number; slug: string; status: string; title: string; categoryId: number | null; industryId: number | null; locationId: number | null
@@ -54,9 +56,12 @@ export default function JobForm({ job, taxonomy, moderation, defaultDeadline }: 
     router.post(`/employer/jobs/${job.id}/status`, { status }, { preserveScroll: true })
   }
 
+  // salary currency follows the job's country
+  const countryCode = taxonomy.locations.find((c) => c.cities.some((ci) => String(ci.id) === form.data.locationId || ci.areas.some((a) => String(a.id) === form.data.locationId)))?.code
+  const currency = countryByCode(countryCode)?.currency
   const canPublish = !job || ['draft', 'rejected', 'closed'].includes(job.status)
   const blocked = moderation.companyStatus === 'rejected' || moderation.companyStatus === 'suspended'
-  const locationOptions = taxonomy.locations.flatMap((m) => [{ value: m.id, label: `${m.name} (municipality)`, group: m.name }, ...m.areas.map((a) => ({ value: a.id, label: a.name, group: m.name }))])
+  const locationOptions = locationIdOptions(taxonomy.locations)
 
   return (
     <AppLayout>
@@ -85,7 +90,7 @@ export default function JobForm({ job, taxonomy, moderation, defaultDeadline }: 
               <TextField wrapperClass="sm:col-span-2" label="Job title" value={form.data.title} onChange={(e) => form.setData('title', e.target.value)} error={form.errors.title} required placeholder="e.g. Senior Quantity Surveyor" />
               <SelectField label="Category" placeholder="Choose" value={form.data.categoryId} onChange={(e) => form.setData('categoryId', e.target.value)} options={taxonomy.categories.map((c) => ({ value: c.id, label: c.name }))} error={form.errors.categoryId} required />
               <SelectField label="Industry" optional placeholder="Same as company" value={form.data.industryId} onChange={(e) => form.setData('industryId', e.target.value)} options={taxonomy.industries.map((c) => ({ value: c.id, label: c.name }))} error={form.errors.industryId} />
-              <SelectField label="Location in Qatar" placeholder="Choose" value={form.data.locationId} onChange={(e) => form.setData('locationId', e.target.value)} options={locationOptions} error={form.errors.locationId} required />
+              <SelectField label="Location" placeholder="Choose" value={form.data.locationId} onChange={(e) => form.setData('locationId', e.target.value)} options={locationOptions} error={form.errors.locationId} required />
               <SelectField label="Work arrangement" value={form.data.workArrangement} onChange={(e) => form.setData('workArrangement', e.target.value)} options={WorkArrangement.values.map((v) => ({ value: v, label: WorkArrangement.label(v) }))} />
               <SelectField label="Employment type" value={form.data.employmentType} onChange={(e) => form.setData('employmentType', e.target.value)} options={EmploymentType.values.map((v) => ({ value: v, label: EmploymentType.label(v) }))} />
               <TextField label="Number of openings" type="number" min={1} max={500} value={form.data.vacancies} onChange={(e) => form.setData('vacancies', e.target.value)} error={form.errors.vacancies} />
@@ -105,8 +110,8 @@ export default function JobForm({ job, taxonomy, moderation, defaultDeadline }: 
             <div className="grid gap-4 sm:grid-cols-2">
               <TextField label="Minimum years of experience" type="number" min={0} max={40} value={form.data.minExperience} onChange={(e) => form.setData('minExperience', e.target.value)} error={form.errors.minExperience} />
               <SelectField label="Minimum education" placeholder="Not specified" value={form.data.educationLevel} onChange={(e) => form.setData('educationLevel', e.target.value)} options={EducationLevel.values.map((v) => ({ value: v, label: EducationLevel.label(v) }))} />
-              <TextField label="Monthly salary from (QAR)" optional type="number" min={0} step={100} value={form.data.salaryMin} onChange={(e) => form.setData('salaryMin', e.target.value)} error={form.errors.salaryMin} />
-              <TextField label="Monthly salary to (QAR)" optional type="number" min={0} step={100} value={form.data.salaryMax} onChange={(e) => form.setData('salaryMax', e.target.value)} error={form.errors.salaryMax} />
+              <TextField label={`Monthly salary from${currency ? ` (${currency})` : ''}`} optional type="number" min={0} step={100} value={form.data.salaryMin} onChange={(e) => form.setData('salaryMin', e.target.value)} error={form.errors.salaryMin} />
+              <TextField label={`Monthly salary to${currency ? ` (${currency})` : ''}`} optional type="number" min={0} step={100} value={form.data.salaryMax} onChange={(e) => form.setData('salaryMax', e.target.value)} error={form.errors.salaryMax} />
               <Checkbox className="sm:col-span-2" label="Show salary on the job listing" description="Jobs with a visible salary get noticeably more applicants. If hidden, it's still used to match salary filters but never displayed." checked={form.data.salaryVisible} onChange={(e) => form.setData('salaryVisible', e.target.checked)} />
             </div>
           </Panel>
@@ -118,7 +123,7 @@ export default function JobForm({ job, taxonomy, moderation, defaultDeadline }: 
                 value={form.data.applicationMethod}
                 onChange={(v) => form.setData('applicationMethod', v)}
                 options={[
-                  { value: 'platform', label: 'On QatarHire', description: 'Candidates apply with their profile and CV; you manage them in your pipeline.' },
+                  { value: 'platform', label: 'On HireMeGulf', description: 'Candidates apply with their profile and CV; you manage them in your pipeline.' },
                   { value: 'external_url', label: 'On our website', description: 'Candidates are sent to your careers page.' },
                   { value: 'email', label: 'By email', description: 'Candidates email their CV to an address you choose.' },
                 ]}
@@ -152,7 +157,7 @@ export default function JobForm({ job, taxonomy, moderation, defaultDeadline }: 
                   {['published', 'paused'].includes(job.status) && <Button type="button" size="sm" variant="quiet" onClick={() => setStatus('closed', 'Close this job to new applications?')}>Close to applications</Button>}
                   {job.status === 'pending_review' && <Button type="button" size="sm" variant="quiet" onClick={() => setStatus('draft')}>Withdraw from review</Button>}
                   {['draft', 'rejected', 'closed'].includes(job.status) && <Button type="button" size="sm" variant="quiet" onClick={() => setStatus('archived', 'Archive this job? It will be hidden from your list.')}>Archive</Button>}
-                  {job.status === 'published' && <Link href={`/jobs/${job.slug}`} className="px-3 py-1.5 text-center text-[13px] text-maroon-700 hover:underline">View public page</Link>}
+                  {job.status === 'published' && <Link href={`/jobs/${job.slug}`} className="px-3 py-1.5 text-center text-[13px] text-brand-700 hover:underline">View public page</Link>}
                 </div>
               )}
             </div>

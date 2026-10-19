@@ -6,15 +6,17 @@ import { Button } from '~/components/ui/button'
 import { Checkbox, SelectField, TextArea, TextField } from '~/components/ui/form'
 import { Badge, Modal, PageHeader, Panel } from '~/components/ui/misc'
 import { TagInput } from '~/components/tag_input'
-import { Availability, EducationLevel, LanguageProficiency, WorkAuthorization } from '#shared/enums'
+import { Availability, EducationLevel, Gender, LanguageProficiency, WorkAuthorization } from '#shared/enums'
 import { date, fileSize } from '~/lib/format'
 import type { CvBrief, Taxonomy } from '~/lib/types'
+import { locationIdOptions } from '~/lib/locations'
+import { Currencies } from '#shared/gulf'
 
 type Experience = { id: number; jobTitle: string; companyName: string; location: string | null; startDate: string; endDate: string | null; isCurrent: boolean; description: string | null }
 type Education = { id: number; institution: string; qualification: string; fieldOfStudy: string | null; startYear: number | null; endYear: number | null }
 type Certification = { id: number; name: string; issuer: string | null; year: number | null }
 type Profile = {
-  fullName: string; headline: string | null; currentJobTitle: string | null; summary: string | null
+  fullName: string; headline: string | null; desiredPosition: string | null; gender: string | null; expectedSalaryCurrency: string | null; currentJobTitle: string | null; summary: string | null
   phone: string | null; contactEmail: string | null; photoUrl: string | null
   currentLocationId: number | null; currentLocationText: string | null; preferredLocationId: number | null
   industryId: number | null; yearsExperience: number | null; educationLevel: string | null; expectedSalary: number | null
@@ -30,13 +32,11 @@ const orUndef = (v: string) => (v === '' ? undefined : v)
 const numOrUndef = (v: string) => (v === '' ? undefined : Number(v))
 
 export default function ProfilePage({ profile, completeness, taxonomy }: Props) {
-  const locationOptions = taxonomy.locations.flatMap((m) => [
-    { value: m.id, label: `${m.name} (all)`, group: m.name },
-    ...m.areas.map((a) => ({ value: a.id, label: a.name, group: m.name })),
-  ])
+  const locationOptions = locationIdOptions(taxonomy.locations)
+  const preferredOptions = locationIdOptions(taxonomy.locations, { includeCountry: true })
 
   const basics = useForm({
-    fullName: profile.fullName, headline: s(profile.headline), currentJobTitle: s(profile.currentJobTitle), summary: s(profile.summary),
+    fullName: profile.fullName, headline: s(profile.headline), desiredPosition: s(profile.desiredPosition), gender: s(profile.gender), expectedSalaryCurrency: s(profile.expectedSalaryCurrency), currentJobTitle: s(profile.currentJobTitle), summary: s(profile.summary),
     phone: s(profile.phone), contactEmail: s(profile.contactEmail), currentLocationId: s(profile.currentLocationId), currentLocationText: s(profile.currentLocationText),
     preferredLocationId: s(profile.preferredLocationId), industryId: s(profile.industryId), yearsExperience: s(profile.yearsExperience),
     educationLevel: s(profile.educationLevel), expectedSalary: s(profile.expectedSalary), availability: s(profile.availability),
@@ -46,7 +46,7 @@ export default function ProfilePage({ profile, completeness, taxonomy }: Props) 
   const saveBasics = () =>
     (basics.transform((d) => ({
         ...d,
-        headline: orUndef(d.headline), currentJobTitle: orUndef(d.currentJobTitle), summary: orUndef(d.summary), phone: orUndef(d.phone),
+        headline: orUndef(d.headline), desiredPosition: orUndef(d.desiredPosition), gender: orUndef(d.gender), expectedSalaryCurrency: orUndef(d.expectedSalaryCurrency), currentJobTitle: orUndef(d.currentJobTitle), summary: orUndef(d.summary), phone: orUndef(d.phone),
         contactEmail: orUndef(d.contactEmail), currentLocationText: orUndef(d.currentLocationText), linkedinUrl: orUndef(d.linkedinUrl), portfolioUrl: orUndef(d.portfolioUrl),
         currentLocationId: numOrUndef(d.currentLocationId), preferredLocationId: numOrUndef(d.preferredLocationId), industryId: numOrUndef(d.industryId),
         yearsExperience: numOrUndef(d.yearsExperience), expectedSalary: numOrUndef(d.expectedSalary), noticePeriodDays: numOrUndef(d.noticePeriodDays),
@@ -77,20 +77,25 @@ export default function ProfilePage({ profile, completeness, taxonomy }: Props) 
             <form className="grid gap-4 sm:grid-cols-2" onSubmit={(e) => { e.preventDefault(); saveBasics() }}>
               <PhotoField url={profile.photoUrl} />
               <TextField wrapperClass="sm:col-span-2" label="Full name" value={basics.data.fullName} onChange={(e) => basics.setData('fullName', e.target.value)} error={basics.errors.fullName} required />
+              <TextField label="Position wanted" placeholder="e.g. Civil Engineer" value={basics.data.desiredPosition} onChange={(e) => basics.setData('desiredPosition', e.target.value)} error={basics.errors.desiredPosition} hint="Shown on your profile card." />
+              <SelectField label="Gender" optional placeholder="Prefer not to say" value={basics.data.gender} onChange={(e) => basics.setData('gender', e.target.value)} options={Gender.values.map((v) => ({ value: v, label: Gender.label(v) }))} hint="Shown on your card if you choose one." />
               <TextField wrapperClass="sm:col-span-2" label="Professional headline" placeholder="e.g. Site engineer with 8 years in MEP projects" value={basics.data.headline} onChange={(e) => basics.setData('headline', e.target.value)} error={basics.errors.headline} hint="The first line employers read." />
               <TextField label="Current or most recent job title" value={basics.data.currentJobTitle} onChange={(e) => basics.setData('currentJobTitle', e.target.value)} error={basics.errors.currentJobTitle} />
               <SelectField label="Industry" placeholder="Choose" value={basics.data.industryId} onChange={(e) => basics.setData('industryId', e.target.value)} options={taxonomy.industries.map((i) => ({ value: i.id, label: i.name }))} error={basics.errors.industryId} />
               <TextArea wrapperClass="sm:col-span-2" label="Summary" rows={5} value={basics.data.summary} onChange={(e) => basics.setData('summary', e.target.value)} error={basics.errors.summary} hint="A few sentences on what you do, what you're good at and what you're looking for." />
               <TextField label="Years of experience" type="number" min={0} max={60} value={basics.data.yearsExperience} onChange={(e) => basics.setData('yearsExperience', e.target.value)} error={basics.errors.yearsExperience} />
               <SelectField label="Highest education" placeholder="Choose" value={basics.data.educationLevel} onChange={(e) => basics.setData('educationLevel', e.target.value)} options={EducationLevel.values.map((v) => ({ value: v, label: EducationLevel.label(v) }))} error={basics.errors.educationLevel} />
-              <SelectField label="Current location in Qatar" placeholder="Outside Qatar / not listed" value={basics.data.currentLocationId} onChange={(e) => basics.setData('currentLocationId', e.target.value)} options={locationOptions} error={basics.errors.currentLocationId} />
-              <TextField label="Current location (if outside Qatar)" optional placeholder="e.g. Kochi, India" value={basics.data.currentLocationText} onChange={(e) => basics.setData('currentLocationText', e.target.value)} error={basics.errors.currentLocationText} />
-              <SelectField label="Preferred work location" placeholder="Anywhere in Qatar" value={basics.data.preferredLocationId} onChange={(e) => basics.setData('preferredLocationId', e.target.value)} options={taxonomy.locations.map((m) => ({ value: m.id, label: m.name }))} error={basics.errors.preferredLocationId} />
-              <TextField label="Expected monthly salary (QAR)" optional type="number" min={0} step={100} value={basics.data.expectedSalary} onChange={(e) => basics.setData('expectedSalary', e.target.value)} error={basics.errors.expectedSalary} />
+              <SelectField label="Current location in the Gulf" placeholder="Outside the Gulf / not listed" value={basics.data.currentLocationId} onChange={(e) => basics.setData('currentLocationId', e.target.value)} options={locationOptions} error={basics.errors.currentLocationId} />
+              <TextField label="Current location (if outside the Gulf)" optional placeholder="e.g. Kochi, India" value={basics.data.currentLocationText} onChange={(e) => basics.setData('currentLocationText', e.target.value)} error={basics.errors.currentLocationText} />
+              <SelectField label="Preferred work location" placeholder="Anywhere in the Gulf" value={basics.data.preferredLocationId} onChange={(e) => basics.setData('preferredLocationId', e.target.value)} options={preferredOptions} error={basics.errors.preferredLocationId} />
+              <div className="grid grid-cols-[1fr_96px] gap-2">
+                <TextField label="Expected monthly salary" optional type="number" min={0} step={100} value={basics.data.expectedSalary} onChange={(e) => basics.setData('expectedSalary', e.target.value)} error={basics.errors.expectedSalary} />
+                <SelectField label="Currency" placeholder="Auto" value={basics.data.expectedSalaryCurrency} onChange={(e) => basics.setData('expectedSalaryCurrency', e.target.value)} options={Currencies.map((c) => ({ value: c, label: c }))} hint="Auto: your preferred country" />
+              </div>
               <SelectField label="Availability" placeholder="Choose" value={basics.data.availability} onChange={(e) => basics.setData('availability', e.target.value)} options={Availability.values.map((v) => ({ value: v, label: Availability.label(v) }))} error={basics.errors.availability} />
               <TextField label="Notice period (days)" optional type="number" min={0} max={365} value={basics.data.noticePeriodDays} onChange={(e) => basics.setData('noticePeriodDays', e.target.value)} error={basics.errors.noticePeriodDays} />
               <SelectField
-                label="Work authorisation in Qatar"
+                label="Work authorisation in the Gulf"
                 optional
                 placeholder="Prefer not to say"
                 value={basics.data.workAuthorization}
@@ -98,8 +103,8 @@ export default function ProfilePage({ profile, completeness, taxonomy }: Props) 
                 options={WorkAuthorization.values.filter((v) => v !== 'prefer_not_to_say').map((v) => ({ value: v, label: WorkAuthorization.label(v) }))}
                 hint="Optional. Helps employers who can't sponsor visas."
               />
-              <div className="flex items-end pb-2"><Checkbox label="Open to relocating within Qatar" checked={basics.data.openToRelocation} onChange={(e) => basics.setData('openToRelocation', e.target.checked)} /></div>
-              <TextField label="Phone" optional type="tel" placeholder="+974" value={basics.data.phone} onChange={(e) => basics.setData('phone', e.target.value)} error={basics.errors.phone} hint="Private. Shared only per your privacy settings." />
+              <div className="flex items-end pb-2"><Checkbox label="Open to relocating to another Gulf country" checked={basics.data.openToRelocation} onChange={(e) => basics.setData('openToRelocation', e.target.checked)} /></div>
+              <TextField label="Phone" optional type="tel" placeholder="+971 50 123 4567" value={basics.data.phone} onChange={(e) => basics.setData('phone', e.target.value)} error={basics.errors.phone} hint="Private. Shared only per your privacy settings." />
               <TextField label="Contact email" optional type="email" value={basics.data.contactEmail} onChange={(e) => basics.setData('contactEmail', e.target.value)} error={basics.errors.contactEmail} hint="Private. Defaults to your sign-in email." />
               <TextField label="LinkedIn URL" optional type="url" placeholder="https://linkedin.com/in/…" value={basics.data.linkedinUrl} onChange={(e) => basics.setData('linkedinUrl', e.target.value)} error={basics.errors.linkedinUrl} />
               <TextField label="Portfolio URL" optional type="url" placeholder="https://" value={basics.data.portfolioUrl} onChange={(e) => basics.setData('portfolioUrl', e.target.value)} error={basics.errors.portfolioUrl} />
@@ -188,7 +193,7 @@ export default function ProfilePage({ profile, completeness, taxonomy }: Props) 
                 ))}
               </ul>
             ) : (
-              <p className="px-5 py-4 text-sm text-slate">e.g. NEBOSH IGC, PMP, CPA, Qatar driving licence.</p>
+              <p className="px-5 py-4 text-sm text-slate">e.g. NEBOSH IGC, PMP, CPA, UAE driving licence.</p>
             )}
           </Panel>
         </div>
@@ -196,7 +201,7 @@ export default function ProfilePage({ profile, completeness, taxonomy }: Props) 
         <aside className="lg:sticky lg:top-20 lg:self-start">
           <Panel title="Profile strength">
             <p className="font-display text-3xl font-bold">{completeness.score}%</p>
-            <div className="mt-2 h-2 overflow-hidden rounded-full bg-pearl"><div className="h-full rounded-full bg-maroon-600" style={{ width: `${completeness.score}%` }} /></div>
+            <div className="mt-2 h-2 overflow-hidden rounded-full bg-pearl"><div className="h-full rounded-full bg-brand-600" style={{ width: `${completeness.score}%` }} /></div>
             {completeness.missing.length ? (
               <ul className="mt-4 flex flex-col gap-1.5 text-sm text-slate">{completeness.missing.map((m) => <li key={m}>{m}</li>)}</ul>
             ) : (
@@ -264,7 +269,7 @@ function CvPanel({ cvs }: { cvs: CvBrief[] }) {
             <li key={cv.id} className="flex flex-wrap items-center gap-3 px-5 py-3.5">
               <FileText className="size-5 shrink-0 text-slate" aria-hidden />
               <div className="min-w-0 flex-1">
-                <p className="flex items-center gap-2 text-sm font-medium">{cv.label} {cv.isPrimary && <Badge tone="maroon">Main CV</Badge>}</p>
+                <p className="flex items-center gap-2 text-sm font-medium">{cv.label} {cv.isPrimary && <Badge tone="brand">Main CV</Badge>}</p>
                 <p className="truncate text-[13px] text-slate">{cv.originalName} — {fileSize(cv.sizeBytes)}, uploaded {date(cv.createdAt)}</p>
               </div>
               <div className="flex flex-wrap gap-1">

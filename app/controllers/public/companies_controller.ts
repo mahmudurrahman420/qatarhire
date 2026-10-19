@@ -38,7 +38,7 @@ export default class CompaniesController {
         meta: { total: list.total, page: list.currentPage, lastPage: list.lastPage },
       },
       industries: taxonomy.industries,
-      meta: { title: 'Employers hiring in Qatar', description: 'Browse companies hiring in Qatar. See verified employers and their open vacancies.' },
+      meta: { title: 'Employers hiring in the Gulf', description: 'Browse companies hiring in the UAE, Saudi Arabia, Qatar, Kuwait, Oman and Bahrain. See verified employers and their open vacancies.' },
     })
   }
 
@@ -71,7 +71,7 @@ export default class CompaniesController {
         memberSince: company.createdAt.toISODate(),
       },
       jobs: jobs.map(jobCard),
-      meta: { title: `${company.name} jobs in Qatar`, description: excerpt(company.description) || `Open jobs at ${company.name} in Qatar.` },
+      meta: { title: `${company.name} jobs`, description: excerpt(company.description) || `Open jobs at ${company.name}.` },
     })
   }
 }

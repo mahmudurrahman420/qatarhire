@@ -7,7 +7,7 @@ const loggerConfig = defineConfig({
   loggers: {
     app: {
       enabled: true,
-      name: env.get('APP_NAME', 'qatarhire'),
+      name: env.get('APP_NAME', 'hiremegulf'),
       level: env.get('LOG_LEVEL'),
       transport: {
         targets: targets()

@@ -10,6 +10,7 @@ import { membershipFor } from '#services/company_context'
 
 /**
  * The only way a CV leaves storage. Authorises the requester on every call:
+ *  - anyone, for the primary CV of a public profile that allows CV downloads
  *  - the candidate who owns it
  *  - an employer with consent (applied to their company, or opted-in primary CV)
  *  - an administrator (logged)
@@ -18,14 +19,18 @@ import { membershipFor } from '#services/company_context'
 export default class CvDownloadsController {
   async show(ctx: HttpContext) {
     const { params, auth, response } = ctx
-    const user = auth.getUserOrFail()
+    const user = auth.user ?? null
     const cv = await CandidateCv.find(params.id)
     if (!cv) return response.notFound()
     const profile = await CandidateProfile.findOrFail(cv.candidateProfileId)
 
     let allowed = false
-    if (user.isCandidate) {
-      allowed = profile.userId === user.id
+    if (!user) {
+      // signed-out visitors: only the primary CV of a public profile that allows downloads
+      allowed = cv.isPrimary && profile.cvSearchable && (await CandidateAccess.isPubliclyVisible(profile))
+      if (allowed) await CandidateAccess.logAccess(ctx, null, null, profile.id, 'cv_download', cv.id)
+    } else if (user.isCandidate) {
+      allowed = profile.userId === user.id || (cv.isPrimary && profile.cvSearchable && (await CandidateAccess.isPubliclyVisible(profile)))
     } else if (user.isEmployer) {
       const membership = await membershipFor(user)
       if (membership) {

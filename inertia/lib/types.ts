@@ -31,7 +31,7 @@ export type Paginated<T> = {
   meta: { total: number; page: number; lastPage: number; perPage?: number }
 }
 
-export type Salary = { min: number | null; max: number | null; currency: 'QAR'; period: 'month' } | null
+export type Salary = { min: number | null; max: number | null; currency: string; period: 'month' } | null
 
 export type JobCard = {
   id: number
@@ -39,6 +39,7 @@ export type JobCard = {
   slug: string
   company: { id: number; name: string; slug: string; logoUrl: string | null; verified: boolean } | null
   location: string | null
+  countryCode: string | null
   category: string | null
   employmentType: string
   workArrangement: string
@@ -53,8 +54,13 @@ export type JobCard = {
 
 export type CandidateCard = {
   id: number
+  isPublic: boolean
   name: string
+  photoUrl: string | null
   headline: string | null
+  desiredPosition: string | null
+  gender: 'male' | 'female' | null
+  publicCvUrl: string | null
   currentJobTitle: string | null
   skills: string[]
   yearsExperience: number | null
@@ -82,7 +88,8 @@ export type CvBrief = {
 export type Taxonomy = {
   industries: { id: number; name: string; slug: string }[]
   categories: { id: number; name: string; slug: string; icon: string | null }[]
-  locations: { id: number; name: string; slug: string; areas: { id: number; name: string; slug: string }[] }[]
+  /** countries → cities → districts */
+  locations: { id: number; name: string; slug: string; code: string; cities: { id: number; name: string; slug: string; areas: { id: number; name: string; slug: string }[] }[] }[]
   skills: { id: number; name: string; slug: string }[]
   languages: { id: number; name: string; code: string }[]
 }

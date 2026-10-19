@@ -42,7 +42,7 @@ export default function JobShow({ job, company, related, candidateState, isOwner
   const left = daysLeft(job.deadline)
 
   const facts: Array<[typeof MapPin, string, string | null]> = [
-    [MapPin, 'Location', [job.location, job.workArrangement !== 'on_site' ? WorkArrangement.label(job.workArrangement as never) : null].filter(Boolean).join(', ') || 'Qatar'],
+    [MapPin, 'Location', [job.location, job.workArrangement !== 'on_site' ? WorkArrangement.label(job.workArrangement as never) : null].filter(Boolean).join(', ') || 'Gulf'],
     [Briefcase, 'Job type', EmploymentType.label(job.employmentType as never)],
     [Users, 'Experience', job.minExperience === 0 ? 'Open to new graduates' : `${job.minExperience}+ years`],
     [GraduationCap, 'Education', job.educationLevel ? EducationLevel.label(job.educationLevel as never) : 'Not specified'],
@@ -62,16 +62,16 @@ export default function JobShow({ job, company, related, candidateState, isOwner
     if (job.applicationMethod === 'external_url' && job.applicationUrl)
       return (
         <>
-          <a href={job.applicationUrl} target="_blank" rel="noopener noreferrer nofollow" className="inline-flex h-12 items-center justify-center gap-2 rounded-ctl bg-maroon-600 px-6 font-medium text-white hover:bg-maroon-700">
+          <a href={job.applicationUrl} target="_blank" rel="noopener noreferrer nofollow" className="inline-flex h-12 items-center justify-center gap-2 rounded-ctl bg-brand-600 px-6 font-medium text-white hover:bg-brand-700">
             Apply on company site <ExternalLink className="size-4" />
           </a>
-          <p className="text-xs text-slate">You'll leave QatarHire. Never pay a fee to apply.</p>
+          <p className="text-xs text-slate">You'll leave hiremegulf.com. Never pay a fee to apply.</p>
         </>
       )
     if (job.applicationMethod === 'email' && job.applicationEmail)
       return (
         <>
-          <a href={`mailto:${job.applicationEmail}?subject=${encodeURIComponent(`Application: ${job.title}`)}`} className="inline-flex h-12 items-center justify-center gap-2 rounded-ctl bg-maroon-600 px-6 font-medium text-white hover:bg-maroon-700">
+          <a href={`mailto:${job.applicationEmail}?subject=${encodeURIComponent(`Application: ${job.title}`)}`} className="inline-flex h-12 items-center justify-center gap-2 rounded-ctl bg-brand-600 px-6 font-medium text-white hover:bg-brand-700">
             <Mail className="size-4" /> Apply by email
           </a>
           <p className="break-all text-xs text-slate">{job.applicationEmail}</p>
@@ -93,7 +93,7 @@ export default function JobShow({ job, company, related, candidateState, isOwner
       )}
       <div className="mx-auto max-w-6xl px-4 pt-8 sm:px-6">
         <nav aria-label="Breadcrumb" className="mb-5 text-sm text-slate">
-          <Link href="/jobs" className="hover:text-maroon-700">Jobs</Link>
+          <Link href="/jobs" className="hover:text-brand-700">Jobs</Link>
           {job.category && <> <span aria-hidden>/</span> <span>{job.category}</span></>}
         </nav>
 
@@ -104,7 +104,7 @@ export default function JobShow({ job, company, related, candidateState, isOwner
               <div className="min-w-0">
                 <h1 className="text-[28px] sm:text-[34px]">{job.title}</h1>
                 <p className="mt-1 flex flex-wrap items-center gap-2 text-slate">
-                  <Link href={`/companies/${company.slug}`} className="font-medium text-ink hover:text-maroon-700">{company.name}</Link>
+                  <Link href={`/companies/${company.slug}`} className="font-medium text-ink hover:text-brand-700">{company.name}</Link>
                   {company.verified && <VerificationBadge status="verified" />}
                 </p>
                 <p className="mt-2 text-sm text-slate">
@@ -114,7 +114,7 @@ export default function JobShow({ job, company, related, candidateState, isOwner
               </div>
             </header>
 
-            {salary && <p className="mt-6 font-display text-2xl font-bold text-maroon-700">{salary}</p>}
+            {salary && <p className="mt-6 font-display text-2xl font-bold text-brand-700">{salary}</p>}
 
             <dl className="mt-6 grid gap-x-6 gap-y-4 rounded-panel border border-line bg-white p-5 sm:grid-cols-2">
               {facts.map(([Icon, label, value]) => (
@@ -173,7 +173,7 @@ export default function JobShow({ job, company, related, candidateState, isOwner
               <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm text-slate">
                 {company.industry && <span>{company.industry}</span>}
                 {company.size && <span>{CompanySize.label(company.size as never)}</span>}
-                {company.website && <a href={company.website} target="_blank" rel="noopener noreferrer nofollow" className="text-maroon-700 hover:underline">Company website</a>}
+                {company.website && <a href={company.website} target="_blank" rel="noopener noreferrer nofollow" className="text-brand-700 hover:underline">Company website</a>}
               </div>
               {!company.verified && (
                 <p className="mt-4 rounded-ctl bg-amber-50 px-3 py-2 text-[13px] text-amber">
@@ -189,7 +189,7 @@ export default function JobShow({ job, company, related, candidateState, isOwner
               {job.isOpen && left !== null && left <= 7 && left >= 0 && <p className="text-sm font-medium text-amber">{left === 0 ? 'Closes today' : `Closes in ${left} day${left > 1 ? 's' : ''}`}</p>}
               {auth?.role === 'candidate' && candidateState && (
                 <Button type="button" variant="secondary" onClick={() => router.post(`/jobs/${job.slug}/save`, {}, { preserveScroll: true })} aria-pressed={candidateState.saved}>
-                  <Heart className={cn('size-4', candidateState.saved && 'fill-maroon-600 text-maroon-600')} /> {candidateState.saved ? 'Saved' : 'Save job'}
+                  <Heart className={cn('size-4', candidateState.saved && 'fill-brand-600 text-brand-600')} /> {candidateState.saved ? 'Saved' : 'Save job'}
                 </Button>
               )}
               {job.applicationMethod !== 'platform' && <p className="text-xs text-slate">{ApplicationMethod.label(job.applicationMethod as never)}</p>}

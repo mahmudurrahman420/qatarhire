@@ -6,6 +6,17 @@ import Location from '#models/location'
 import Skill, { skillSlug } from '#models/skill'
 import Language from '#models/language'
 import Plan from '#models/plan'
+import { GulfCountries } from '#shared/gulf'
+
+/** City names can repeat across countries; keep slugs unique by suffixing the country. */
+async function uniqueLocationSlug(base: string, countrySlug: string) {
+  const existing = await Location.findBy('slug', base)
+  if (!existing) return base
+  // re-seeding: same row (same country) keeps its slug
+  const country = await Location.findBy('slug', countrySlug)
+  if (country && existing.countryCode === country.countryCode) return base
+  return `${base}-${countrySlug}`
+}
 
 const slug = (s: string) => string.slug(s, { lower: true, strict: true })
 
@@ -39,27 +50,50 @@ export default class extends BaseSeeder {
       await JobCategory.updateOrCreate({ slug: slug(name) }, { name, slug: slug(name), icon, sortOrder: i, isActive: true })
     }
 
-    // Qatar's eight municipalities with notable districts / employment hubs.
-    const municipalities: Record<string, string[]> = {
-      'Doha': ['West Bay', 'Msheireb', 'Al Sadd', 'Al Dafna', 'The Pearl-Qatar', 'Old Airport', 'Bin Mahmoud', 'Al Mansoura', 'Hamad International Airport'],
-      'Al Rayyan': ['Education City', 'Industrial Area', 'Al Gharrafa', 'Aspire Zone', 'Muaither', 'Ain Khaled'],
-      'Al Wakrah': ['Al Wakrah City', 'Mesaieed', 'Al Wukair'],
-      'Al Daayen': ['Lusail', 'Simaisma', 'Umm Qarn'],
-      'Umm Salal': ['Umm Salal Mohammed', 'Umm Salal Ali'],
-      'Al Khor & Al Thakhira': ['Al Khor City', 'Ras Laffan'],
-      'Al Shamal': ['Madinat Al Shamal', 'Al Ruwais'],
-      'Al Shahaniya': ['Dukhan', 'Al Shahaniya City'],
+    // Six GCC countries → main cities → notable districts / employment hubs.
+    const gulf: Record<string, Record<string, string[]>> = {
+      uae: {
+        'Dubai': ['Business Bay', 'Dubai Marina', 'Downtown Dubai', 'Jebel Ali', 'Deira', 'Al Quoz', 'Dubai Silicon Oasis'],
+        'Abu Dhabi': ['Al Reem Island', 'Mussafah', 'Khalifa City'],
+        'Sharjah': [], 'Ajman': [], 'Ras Al Khaimah': [], 'Fujairah': [], 'Al Ain': [], 'Umm Al Quwain': [],
+      },
+      'saudi-arabia': {
+        'Riyadh': ['King Abdullah Financial District', 'Olaya'],
+        'Jeddah': [], 'Dammam': [], 'Al Khobar': [], 'Dhahran': [], 'Jubail': [], 'Makkah': [], 'Madinah': [], 'Tabuk': [], 'Yanbu': [],
+      },
+      qatar: {
+        'Doha': ['West Bay', 'Msheireb', 'Al Sadd', 'Al Dafna', 'The Pearl-Qatar', 'Old Airport', 'Bin Mahmoud', 'Hamad International Airport'],
+        'Al Rayyan': ['Education City', 'Industrial Area', 'Al Gharrafa', 'Aspire Zone'],
+        'Lusail': [], 'Al Wakrah': [], 'Mesaieed': [], 'Al Khor': [], 'Ras Laffan': [], 'Dukhan': [], 'Umm Salal': [],
+      },
+      kuwait: { 'Kuwait City': ['Sharq', 'Salmiya'], 'Hawalli': [], 'Farwaniya': [], 'Ahmadi': [], 'Jahra': [], 'Mubarak Al-Kabeer': [] },
+      oman: { 'Muscat': ['Ruwi', 'Al Khuwair', 'Seeb'], 'Sohar': [], 'Salalah': [], 'Nizwa': [], 'Sur': [], 'Duqm': [] },
+      bahrain: { 'Manama': ['Seef', 'Bahrain Bay'], 'Muharraq': [], 'Riffa': [], 'Isa Town': [], 'Sitra': [], 'Hamad Town': [] },
     }
     let order = 0
-    for (const [muni, areas] of Object.entries(municipalities)) {
-      const parent = await Location.updateOrCreate({ slug: slug(muni) }, { name: muni, slug: slug(muni), kind: 'municipality', parentId: null, sortOrder: order++, isActive: true })
-      for (const [j, area] of areas.entries()) {
-        await Location.updateOrCreate({ slug: slug(area) }, { name: area, slug: slug(area), kind: 'area', parentId: parent.id, sortOrder: j, isActive: true })
+    for (const country of GulfCountries) {
+      const c = await Location.updateOrCreate(
+        { slug: country.slug },
+        { name: country.name, slug: country.slug, kind: 'country', parentId: null, countryCode: country.code, displayName: country.name, sortOrder: order++, isActive: true }
+      )
+      for (const [i, [city, areas]] of Object.entries(gulf[country.slug]).entries()) {
+        const citySlug = await uniqueLocationSlug(slug(city), country.slug)
+        const cityRow = await Location.updateOrCreate(
+          { slug: citySlug },
+          { name: city, slug: citySlug, kind: 'city', parentId: c.id, countryCode: country.code, displayName: `${city}, ${country.name}`, sortOrder: i, isActive: true }
+        )
+        for (const [j, area] of areas.entries()) {
+          const areaSlug = await uniqueLocationSlug(slug(area), country.slug)
+          await Location.updateOrCreate(
+            { slug: areaSlug },
+            { name: area, slug: areaSlug, kind: 'area', parentId: cityRow.id, countryCode: country.code, displayName: `${area}, ${city}, ${country.name}`, sortOrder: j, isActive: true }
+          )
+        }
       }
     }
 
     const skills = [
-      'Accounting', 'IFRS', 'Financial Analysis', 'Auditing', 'Payroll', 'SAP', 'Oracle ERP', 'Microsoft Excel', 'Power BI', 'Budgeting',
+      'Accounting', 'IFRS', 'Financial Analysis', 'Auditing', 'Payroll', 'SAP', 'Oracle ERP', 'Excel', 'Power BI', 'Budgeting',
       'Customer Service', 'Arabic Translation', 'Data Entry', 'Office Administration', 'Document Control', 'Procurement', 'Contract Management',
       'Supply Chain Management', 'Warehouse Management', 'Logistics Coordination', 'Fleet Management',
       'Civil Engineering', 'Mechanical Engineering', 'Electrical Engineering', 'Structural Design', 'AutoCAD', 'Revit', 'Primavera P6',
@@ -70,7 +104,7 @@ export default class extends BaseSeeder {
       'AWS', 'Microsoft Azure', 'DevOps', 'Docker', 'Kubernetes', 'Cybersecurity', 'Network Administration', 'Cisco', 'IT Support', 'Data Analysis', 'Machine Learning',
       'Digital Marketing', 'SEO', 'Social Media Marketing', 'Content Writing', 'Public Relations', 'Graphic Design', 'Adobe Photoshop', 'Figma', 'UI/UX Design', 'Video Editing',
       'Sales', 'Business Development', 'Account Management', 'Negotiation', 'CRM', 'Salesforce', 'Retail Sales', 'Merchandising',
-      'Recruitment', 'HR Operations', 'Employee Relations', 'Training & Development', 'Qatar Labour Law',
+      'Recruitment', 'HR Operations', 'Employee Relations', 'Training & Development', 'GCC Labour Law', 'VAT', 'Financial Reporting', 'Clinical Support', 'Maintenance', 'Troubleshooting', 'Inventory', 'Team Leadership', 'Logistics', 'Customer Support', 'English',
       'Nursing', 'BLS', 'ACLS', 'Patient Care', 'Pharmacy', 'Medical Coding', 'Physiotherapy', 'Laboratory',
       'Teaching', 'Curriculum Development', 'IGCSE', 'IB Curriculum', 'Classroom Management',
       'Food Safety', 'HACCP', 'Front Office', 'Housekeeping', 'Barista', 'Culinary Arts', 'Event Management',

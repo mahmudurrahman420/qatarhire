@@ -9,7 +9,7 @@ export function FilterTabs({ base, current, param = 'status', tabs, extra = {} }
   return (
     <nav className="mb-4 flex gap-1 overflow-x-auto border-b border-line">
       {tabs.map(([v, l]) => (
-        <Link key={v} href={`${base}?${toQuery({ ...extra, [param]: v || 'all' })}`} aria-current={current === v || (!v && current === 'all') ? 'page' : undefined} className={cn('-mb-px whitespace-nowrap border-b-2 px-3 py-2 text-sm', current === v || (!v && current === 'all') ? 'border-maroon-600 font-medium text-maroon-700' : 'border-transparent text-slate hover:text-ink')}>
+        <Link key={v} href={`${base}?${toQuery({ ...extra, [param]: v || 'all' })}`} aria-current={current === v || (!v && current === 'all') ? 'page' : undefined} className={cn('-mb-px whitespace-nowrap border-b-2 px-3 py-2 text-sm', current === v || (!v && current === 'all') ? 'border-brand-600 font-medium text-brand-700' : 'border-transparent text-slate hover:text-ink')}>
           {l}
         </Link>
       ))}

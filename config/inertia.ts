@@ -35,7 +35,7 @@ const inertiaConfig = defineConfig({
   rootView: 'inertia_layout',
 
   sharedData: {
-    appName: () => env.get('APP_NAME', 'QatarHire'),
+    appName: () => env.get('APP_NAME', 'HireMeGulf'),
     auth: (ctx) => ctx.inertia.always(() => sharedAuth(ctx)),
     flash: (ctx) =>
       ctx.inertia.always(() => ({

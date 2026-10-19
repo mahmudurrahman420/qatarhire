@@ -14,7 +14,23 @@ done
 if [ -z "$APP_KEY" ]; then echo "APP_KEY is required (generate with: node ace generate:key --show)" >&2; exit 1; fi
 : "${APP_URL:=http://localhost:${PORT:-3333}}"; export APP_URL
 
+# Schema epoch: bump this when existing migration files are edited in place (instead of
+# adding new ones). On mismatch the old SQLite DB is moved to $DATA_DIR/backups and the
+# schema is rebuilt from scratch, then reference/demo data and the admin are re-seeded.
+SCHEMA_EPOCH="hiremegulf-2026-10-19"
+DB_FILE="$DATA_DIR/tmp/db.sqlite3"
+EPOCH_FILE="$DATA_DIR/.schema-epoch"
+if [ "${DB_CONNECTION:-sqlite}" = "sqlite" ] && [ -f "$DB_FILE" ] && [ "$(cat "$EPOCH_FILE" 2>/dev/null)" != "$SCHEMA_EPOCH" ]; then
+  ts=$(date -u +%Y%m%d-%H%M%S)
+  mkdir -p "$DATA_DIR/backups"
+  echo "Schema epoch changed -> backing up DB to $DATA_DIR/backups/db-$ts.sqlite3 and rebuilding"
+  for ext in "" "-wal" "-shm"; do
+    if [ -f "$DB_FILE$ext" ]; then mv "$DB_FILE$ext" "$DATA_DIR/backups/db-$ts.sqlite3$ext"; fi
+  done
+fi
+
 node ace migration:run --force
+echo "$SCHEMA_EPOCH" > "$EPOCH_FILE"
 node ace db:seed --files database/seeders/01_reference_seeder.js
 
 # Fictional demo companies/candidates (password DemoPass#2026). The demo seeder

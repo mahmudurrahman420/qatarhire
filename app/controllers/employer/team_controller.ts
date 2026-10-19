@@ -30,7 +30,7 @@ export default class TeamController {
     const { request, company, auth, response, session } = ctx
     const data = await request.validateUsing(inviteValidator)
     if (await User.findBy('email', data.email)) {
-      session.flashErrors({ email: 'This email already has a QatarHire account. Ask them to use a different work email.' })
+      session.flashErrors({ email: 'This email already has a HireMeGulf account. Ask them to use a different work email.' })
       return response.redirect().back()
     }
     const count = await CompanyUser.query().where('company_id', company.id).count('* as total')

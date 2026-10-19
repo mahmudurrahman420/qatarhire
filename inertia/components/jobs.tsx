@@ -25,7 +25,7 @@ export function JobRow({ job, saved, canSave }: { job: JobCard; saved?: boolean;
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
           <h3 className="font-sans text-base font-semibold tracking-normal">
-            <Link href={`/jobs/${job.slug}`} className="after:absolute after:inset-0 hover:text-maroon-700">
+            <Link href={`/jobs/${job.slug}`} className="after:absolute after:inset-0 hover:text-brand-700">
               {job.title}
             </Link>
           </h3>
@@ -57,11 +57,11 @@ export function JobRow({ job, saved, canSave }: { job: JobCard; saved?: boolean;
           <button
             type="button"
             onClick={() => router.post(`/jobs/${job.slug}/save`, {}, { preserveScroll: true })}
-            className="relative z-10 rounded-ctl p-1.5 hover:bg-maroon-50"
+            className="relative z-10 rounded-ctl p-1.5 hover:bg-brand-50"
             aria-pressed={saved}
             aria-label={saved ? `Remove ${job.title} from saved jobs` : `Save ${job.title}`}
           >
-            <Heart className={cn('size-4', saved ? 'fill-maroon-600 text-maroon-600' : 'text-slate')} />
+            <Heart className={cn('size-4', saved ? 'fill-brand-600 text-brand-600' : 'text-slate')} />
           </button>
         )}
       </div>

@@ -2,7 +2,7 @@ import { Link } from '@inertiajs/react'
 import { BookmarkCheck, Download, FileText, Mail, MapPin, Phone, Link2, Globe } from 'lucide-react'
 import { Availability, EducationLevel, LanguageProficiency, WorkAuthorization } from '#shared/enums'
 import type { CandidateCard, CvBrief } from '~/lib/types'
-import { ago, date, fileSize, initials, qar } from '~/lib/format'
+import { ago, date, fileSize, initials, money } from '~/lib/format'
 import { Badge, Panel } from '~/components/ui/misc'
 import { RichText } from '~/components/jobs'
 import { cn } from '~/lib/cn'
@@ -11,6 +11,7 @@ export type CandidateDetail = CandidateCard & {
   fullName: string
   summary: string | null
   expectedSalary: number | null
+  expectedSalaryCurrency: string | null
   noticePeriodDays: number | null
   workAuthorization: string | null
   openToRelocation: boolean
@@ -29,11 +30,11 @@ export type CandidateDetail = CandidateCard & {
 export function CandidateResult({ c, saved, highlight }: { c: CandidateCard; saved?: boolean; highlight?: string[] }) {
   return (
     <article className="relative flex gap-4 border-b border-line px-5 py-4 last:border-b-0">
-      <span aria-hidden className="grid size-11 shrink-0 place-items-center rounded-full bg-dune font-display text-sm font-bold text-maroon-700">{initials(c.name)}</span>
+      <span aria-hidden className="grid size-11 shrink-0 place-items-center rounded-full bg-dune font-display text-sm font-bold text-brand-700">{initials(c.name)}</span>
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-baseline gap-x-2">
           <h3 className="font-sans text-base font-semibold tracking-normal">
-            <Link href={`/employer/candidates/${c.id}`} className="after:absolute after:inset-0 hover:text-maroon-700">{c.headline || c.currentJobTitle || 'Candidate'}</Link>
+            <Link href={`/employer/candidates/${c.id}`} className="after:absolute after:inset-0 hover:text-brand-700">{c.headline || c.currentJobTitle || 'Candidate'}</Link>
           </h3>
           <span className="text-sm text-slate">{c.name}</span>
         </div>
@@ -42,7 +43,7 @@ export function CandidateResult({ c, saved, highlight }: { c: CandidateCard; sav
         </p>
         <div className="mt-2 flex flex-wrap gap-1.5">
           {c.skills.map((s) => (
-            <span key={s} className={cn('rounded-full px-2 py-0.5 text-[12px] ring-1 ring-inset', highlight?.some((h) => h.toLowerCase() === s.toLowerCase()) ? 'bg-maroon-50 text-maroon-700 ring-maroon-100' : 'bg-pearl text-slate ring-line')}>{s}</span>
+            <span key={s} className={cn('rounded-full px-2 py-0.5 text-[12px] ring-1 ring-inset', highlight?.some((h) => h.toLowerCase() === s.toLowerCase()) ? 'bg-brand-50 text-brand-700 ring-brand-100' : 'bg-pearl text-slate ring-line')}>{s}</span>
           ))}
         </div>
         <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[13px] text-slate">
@@ -54,7 +55,7 @@ export function CandidateResult({ c, saved, highlight }: { c: CandidateCard; sav
       <div className="flex shrink-0 flex-col items-end gap-2 text-[12px] text-slate">
         <span>Updated {ago(c.profileUpdatedAt)}</span>
         {c.hasCv && <span className="inline-flex items-center gap-1"><FileText className="size-3.5" aria-hidden /> CV</span>}
-        {saved && <BookmarkCheck className="size-4 text-maroon-600" aria-label="Saved" />}
+        {saved && <BookmarkCheck className="size-4 text-brand-600" aria-label="Saved" />}
       </div>
     </article>
   )
@@ -69,17 +70,22 @@ export function CandidateProfileView({ c, showFullName }: { c: CandidateDetail; 
     ['Education', c.educationLevel ? EducationLevel.label(c.educationLevel as never) : null],
     ['Availability', c.availability ? Availability.label(c.availability as never) : null],
     ['Notice period', c.noticePeriodDays !== null ? `${c.noticePeriodDays} days` : null],
-    ['Expected salary', c.expectedSalary !== null ? `${qar(c.expectedSalary)} / month` : null],
+    ['Expected salary', c.expectedSalary !== null ? `${money(c.expectedSalary, c.expectedSalaryCurrency)} / month` : null],
     ['Work authorisation', c.workAuthorization ? WorkAuthorization.label(c.workAuthorization as never) : null],
-    ['Relocation', c.openToRelocation ? 'Open to relocating within Qatar' : null],
+    ['Relocation', c.openToRelocation ? 'Open to relocating to another Gulf country' : null],
   ]
   return (
     <div className="flex flex-col gap-6">
       <header className="flex gap-4">
-        <span aria-hidden className="grid size-16 shrink-0 place-items-center rounded-full bg-dune font-display text-lg font-bold text-maroon-700">{initials(c.fullName)}</span>
+        {c.photoUrl ? (
+          <img src={c.photoUrl} alt={`Photo of ${c.fullName}`} className="h-28 w-24 shrink-0 rounded-[10px] object-cover" />
+        ) : (
+          <span aria-hidden className="grid size-16 shrink-0 place-items-center rounded-full bg-mint font-display text-lg font-bold text-brand-700">{initials(c.fullName)}</span>
+        )}
         <div>
-          <h1 className="text-2xl">{showFullName ? c.fullName : c.name}</h1>
-          {c.headline && <p className="mt-1 text-[17px]">{c.headline}</p>}
+          <h1 className="text-2xl font-bold">{showFullName ? c.fullName : c.name}</h1>
+          {c.desiredPosition && <p className="mt-0.5 font-medium text-navy">Position wanted: {c.desiredPosition}</p>}
+          {c.headline && <p className="mt-1 text-[16px]">{c.headline}</p>}
           <p className="mt-1 text-sm text-slate">Profile updated {ago(c.profileUpdatedAt)}</p>
         </div>
       </header>
@@ -135,10 +141,10 @@ export function AccessPanel({ c, applied }: { c: CandidateDetail; applied: boole
     <Panel title="Contact and CV">
       {c.contact ? (
         <ul className="flex flex-col gap-2 text-sm">
-          <li className="flex items-center gap-2"><Mail className="size-4 text-slate" aria-hidden /><a href={`mailto:${c.contact.email}`} className="break-all text-maroon-700 hover:underline">{c.contact.email}</a></li>
+          <li className="flex items-center gap-2"><Mail className="size-4 text-slate" aria-hidden /><a href={`mailto:${c.contact.email}`} className="break-all text-brand-700 hover:underline">{c.contact.email}</a></li>
           {c.contact.phone && <li className="flex items-center gap-2"><Phone className="size-4 text-slate" aria-hidden /><a href={`tel:${c.contact.phone}`} className="hover:underline">{c.contact.phone}</a></li>}
-          {c.linkedinUrl && <li className="flex items-center gap-2"><Link2 className="size-4 text-slate" aria-hidden /><a href={c.linkedinUrl} target="_blank" rel="noopener noreferrer nofollow" className="text-maroon-700 hover:underline">LinkedIn</a></li>}
-          {c.portfolioUrl && <li className="flex items-center gap-2"><Globe className="size-4 text-slate" aria-hidden /><a href={c.portfolioUrl} target="_blank" rel="noopener noreferrer nofollow" className="text-maroon-700 hover:underline">Portfolio</a></li>}
+          {c.linkedinUrl && <li className="flex items-center gap-2"><Link2 className="size-4 text-slate" aria-hidden /><a href={c.linkedinUrl} target="_blank" rel="noopener noreferrer nofollow" className="text-brand-700 hover:underline">LinkedIn</a></li>}
+          {c.portfolioUrl && <li className="flex items-center gap-2"><Globe className="size-4 text-slate" aria-hidden /><a href={c.portfolioUrl} target="_blank" rel="noopener noreferrer nofollow" className="text-brand-700 hover:underline">Portfolio</a></li>}
         </ul>
       ) : (
         <p className="text-sm text-slate">This candidate shares contact details only with employers they apply to.</p>

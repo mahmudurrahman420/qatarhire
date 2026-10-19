@@ -72,7 +72,7 @@ export default class PrivacyController {
     }
     await AuditLogger.log('candidate.data_export', { ctx })
     response.header('Content-Type', 'application/json')
-    response.header('Content-Disposition', `attachment; filename="qatarhire-data-${user.id}.json"`)
+    response.header('Content-Disposition', `attachment; filename="hiremegulf-data-${user.id}.json"`)
     return JSON.stringify(payload, null, 2)
   }
 

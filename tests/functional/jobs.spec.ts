@@ -181,16 +181,20 @@ test.group('Public job search', (group) => {
     assert.notInclude(kw, draft.id)
 
     assert.deepEqual(await ids('type=part_time'), [nurse.id])
-    assert.deepEqual(await ids('salary=12000'), [react.id])
-    // municipality filter includes its districts (Lusail is in Al Daayen)
-    assert.deepEqual(await ids('location=al-daayen'), [nurse.id])
+    assert.deepEqual(await ids('salary=12000&currency=QAR'), [react.id])
+    assert.deepEqual(await ids('salary=12000&currency=AED'), [], 'other currencies are not compared')
+    assert.deepEqual(await ids('salary=12000&location=qatar'), [react.id], 'the selected country sets the currency')
+    // a city matches itself; a country matches all of its cities and districts
+    assert.deepEqual(await ids('location=lusail'), [nurse.id])
+    assert.deepEqual((await ids('location=qatar')).sort(), [react.id, nurse.id].sort())
+    assert.deepEqual(await ids('location=uae'), [])
     assert.deepEqual(await ids('q=react&type=part_time'), [])
   })
 
   test('hidden salaries are filterable but never exposed', async ({ client, assert }) => {
     const { company } = await makeEmployer('verified')
     const job = await makeJob(company, { salaryVisible: false, salaryMin: 30000, salaryMax: 40000 })
-    const res = await client.get('/jobs?salary=25000').withInertia()
+    const res = await client.get('/jobs?salary=25000&currency=QAR').withInertia()
     const card = res.inertiaProps.results.data.find((j: any) => j.id === job.id)
     assert.isNull(card.salary)
     assert.notInclude(JSON.stringify(res.inertiaProps), '30000')

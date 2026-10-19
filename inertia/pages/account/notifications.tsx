@@ -17,9 +17,9 @@ export default function Notifications({ notifications }: Props) {
       {notifications.data.length ? (
         <ul className="overflow-hidden rounded-panel border border-line bg-white">
           {notifications.data.map((n) => (
-            <li key={n.id} className={cn('border-b border-line last:border-b-0', !n.readAt && 'bg-maroon-50/40')}>
+            <li key={n.id} className={cn('border-b border-line last:border-b-0', !n.readAt && 'bg-brand-50/40')}>
               <button type="button" onClick={() => router.post(`/notifications/${n.id}/read`)} className="flex w-full items-start gap-3 px-5 py-4 text-start hover:bg-pearl">
-                <span className={cn('mt-2 size-2 shrink-0 rounded-full', n.readAt ? 'bg-transparent' : 'bg-maroon-600')} aria-hidden />
+                <span className={cn('mt-2 size-2 shrink-0 rounded-full', n.readAt ? 'bg-transparent' : 'bg-brand-600')} aria-hidden />
                 <span className="min-w-0 flex-1">
                   <span className={cn('block text-sm', !n.readAt && 'font-semibold')}>{n.title}</span>
                   {n.body && <span className="mt-0.5 block whitespace-pre-line text-sm text-slate">{n.body}</span>}

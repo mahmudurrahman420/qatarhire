@@ -28,10 +28,10 @@ export default function CompaniesIndex({ filters, companies, industries }: Props
   }
   return (
     <SiteLayout>
-      <Head title="Employers hiring in Qatar" />
+      <Head title="Employers hiring in the Gulf" />
       <div className="mx-auto max-w-6xl px-4 pt-10 sm:px-6">
-        <h1 className="text-3xl">Employers in Qatar</h1>
-        <p className="mt-2 max-w-2xl text-slate">Companies with a profile on QatarHire. The verified mark means our team has reviewed the company's details.</p>
+        <h1 className="text-3xl">Employers in the Gulf</h1>
+        <p className="mt-2 max-w-2xl text-slate">Companies hiring across the UAE, Saudi Arabia, Qatar, Kuwait, Oman and Bahrain. The verified mark means our team has reviewed the company's details.</p>
         <form onSubmit={submit} className="mt-6 flex flex-wrap gap-2" role="search">
           <label className="relative min-w-60 flex-1">
             <span className="sr-only">Company name</span>
@@ -57,8 +57,8 @@ export default function CompaniesIndex({ filters, companies, industries }: Props
                       <span className="truncate">{c.name}</span>
                       {c.verified && <VerifiedMark className="size-4 shrink-0 text-gulf" />}
                     </p>
-                    <p className="truncate text-[13px] text-slate">{[c.industry, c.location].filter(Boolean).join(', ') || 'Qatar'}</p>
-                    <p className="mt-1.5 text-[13px] font-medium text-maroon-700">{c.openJobs ? `${c.openJobs} open job${c.openJobs > 1 ? 's' : ''}` : 'No open jobs right now'}</p>
+                    <p className="truncate text-[13px] text-slate">{[c.industry, c.location].filter(Boolean).join(', ') || 'Gulf'}</p>
+                    <p className="mt-1.5 text-[13px] font-medium text-brand-700">{c.openJobs ? `${c.openJobs} open job${c.openJobs > 1 ? 's' : ''}` : 'No open jobs right now'}</p>
                   </div>
                 </Link>
               </li>

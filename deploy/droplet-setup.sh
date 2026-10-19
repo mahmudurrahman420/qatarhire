@@ -28,7 +28,8 @@ HOST=0.0.0.0
 PORT=3333
 APP_KEY=$APP_KEY
 APP_URL=https://$DOMAIN
-APP_NAME=QatarHire
+APP_NAME=HireMeGulf
+MAIL_FROM_NAME=HireMeGulf
 DB_CONNECTION=sqlite
 SESSION_DRIVER=database
 LIMITER_STORE=database
@@ -41,6 +42,12 @@ ADMIN_EMAIL=admin@qatarhire.example
 ADMIN_PASSWORD=${ADMIN_PASSWORD:-}
 ENV
   chmod 600 "$ENVF"
+  echo "Created $ENVF"
+else
+  # Rerun: keep APP_KEY, admin and other settings; only refresh branding.
+  echo "Keeping existing $ENVF (APP_KEY unchanged)"
+  sed -i 's/^APP_NAME=.*/APP_NAME=HireMeGulf/' "$ENVF"
+  grep -q '^MAIL_FROM_NAME=' "$ENVF" && sed -i 's/^MAIL_FROM_NAME=.*/MAIL_FROM_NAME=HireMeGulf/' "$ENVF" || echo 'MAIL_FROM_NAME=HireMeGulf' >> "$ENVF"
 fi
 
 echo "Building image (a few minutes)"
@@ -53,6 +60,8 @@ echo "Waiting for app"
 ok=0; for i in $(seq 1 60); do
   if curl -fsS "http://127.0.0.1:$PORT_LOCAL/health" >/dev/null 2>&1; then ok=1; break; fi; sleep 3; done
 [ $ok = 1 ] || { docker logs --tail 40 qatarhire; echo "QATARHIRE_SETUP_FAILED app"; exit 1; }
+docker logs qatarhire 2>&1 | grep -i 'schema epoch' || true
+docker image prune -f >/dev/null 2>&1 || true
 
 LISTENER=$(ss -ltnpH 'sport = :80' | grep -o 'users:(("[^"]*' | head -1 | sed 's/.*"//' || true)
 echo "Port 80 listener: ${LISTENER:-none}"

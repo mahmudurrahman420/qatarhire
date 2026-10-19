@@ -17,7 +17,7 @@ function ReportRow({ r }: { r: R }) {
     <li className="rounded-panel border border-line bg-white p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-sm"><Badge tone={r.reason === 'scam' ? 'danger' : 'neutral'}>{ReportReason.label(r.reason as never)}</Badge> <span className="ms-1 capitalize text-slate">{r.subjectType}:</span> {r.subject.url ? <Link href={r.subject.url} className="font-medium hover:text-maroon-700">{r.subject.label}</Link> : r.subject.label}</p>
+          <p className="text-sm"><Badge tone={r.reason === 'scam' ? 'danger' : 'neutral'}>{ReportReason.label(r.reason as never)}</Badge> <span className="ms-1 capitalize text-slate">{r.subjectType}:</span> {r.subject.url ? <Link href={r.subject.url} className="font-medium hover:text-brand-700">{r.subject.label}</Link> : r.subject.label}</p>
           {r.details && <p className="mt-2 whitespace-pre-line text-sm">{r.details}</p>}
           <p className="mt-2 text-[12px] text-slate">{dateTime(r.createdAt)} — from {r.reporter ? `${r.reporter.fullName ?? ''} ${r.reporter.email}` : 'anonymous'}</p>
         </div>

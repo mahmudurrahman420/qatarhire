@@ -22,9 +22,9 @@ export default function CompanyShow({ company, jobs }: Props) {
   const form = useForm({ subjectType: 'company', subjectId: company.id, reason: 'scam', details: '', email: '' })
   return (
     <SiteLayout>
-      <Head title={`${company.name} jobs in Qatar`} />
+      <Head title={`${company.name} jobs`} />
       <div className="mx-auto max-w-6xl px-4 pt-10 sm:px-6">
-        <Link href="/companies" className="text-sm text-slate hover:text-maroon-700">Employers</Link>
+        <Link href="/companies" className="text-sm text-slate hover:text-brand-700">Employers</Link>
         <header className="mt-3 flex flex-wrap items-start gap-5">
           <CompanyLogo name={company.name} url={company.logoUrl} size={80} />
           <div className="min-w-0 flex-1">
@@ -36,7 +36,7 @@ export default function CompanyShow({ company, jobs }: Props) {
               {company.size && <span>{CompanySize.label(company.size as never)}</span>}
             </div>
             {company.website && (
-              <a href={company.website} target="_blank" rel="noopener noreferrer nofollow" className="mt-2 inline-flex items-center gap-1.5 text-sm text-maroon-700 hover:underline">
+              <a href={company.website} target="_blank" rel="noopener noreferrer nofollow" className="mt-2 inline-flex items-center gap-1.5 text-sm text-brand-700 hover:underline">
                 <Globe className="size-4" /> {company.website.replace(/^https?:\/\//, '')}
               </a>
             )}

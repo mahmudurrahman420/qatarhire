@@ -1,6 +1,8 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import env from '#start/env'
 import Job from '#models/job'
+import Location from '#models/location'
+import { countryByCode } from '#shared/gulf'
 import CandidateProfile from '#models/candidate_profile'
 import Application from '#models/application'
 import db from '@adonisjs/lucid/services/db'
@@ -18,7 +20,10 @@ export default class JobsController {
       ? (await db.from('saved_jobs').where('user_id', auth.user.id).select('job_id')).map((r) => r.job_id as number)
       : []
     const taxonomy = await Taxonomy.all()
+    const place = filters.location ? await Location.findBy('slug', filters.location) : null
+    const placeName = place ? place.displayName : 'the Gulf'
     return inertia.render('public/jobs/index', {
+      placeName,
       filters,
       results: {
         data: results.all().map(jobCard),
@@ -27,8 +32,8 @@ export default class JobsController {
       savedIds,
       taxonomy: { categories: taxonomy.categories, industries: taxonomy.industries, locations: taxonomy.locations },
       meta: {
-        title: filters.q ? `${filters.q} jobs in Qatar` : 'Jobs in Qatar',
-        description: `${results.total} open jobs in Qatar${filters.q ? ` matching "${filters.q}"` : ''}. Filter by location, salary in QAR, job type and experience.`,
+        title: `${filters.q ? `${filters.q} jobs` : 'Jobs'} in ${placeName}`,
+        description: `${results.total} open jobs in ${placeName}${filters.q ? ` matching "${filters.q}"` : ''}. Filter by country, city, salary, job type and experience.`,
         // filtered variations should not compete with the main listing in search engines
         noindex: results.currentPage > 1 || Object.keys(request.qs()).some((k) => !['q', 'page'].includes(k)),
       },
@@ -98,7 +103,7 @@ export default class JobsController {
       canonical: `${env.get('APP_URL')}/jobs/${job.slug}`,
       meta: {
         title: `${job.title} at ${company.name}`,
-        description: excerpt(`${job.location?.name ?? 'Qatar'}. ${job.description}`),
+        description: excerpt(`${job.location?.displayName ?? 'Gulf'}. ${job.description}`),
         noindex: !job.isOpen,
       },
     })
@@ -124,21 +129,22 @@ function jobPostingSchema(job: Job) {
     },
     'jobLocation': {
       '@type': 'Place',
-      'address': { '@type': 'PostalAddress', 'addressLocality': job.location?.name ?? 'Doha', 'addressCountry': 'QA' },
+      'address': { '@type': 'PostalAddress', 'addressLocality': job.location?.name, 'addressCountry': (job.location?.countryCode ?? 'ae').toUpperCase() },
     },
     'identifier': { '@type': 'PropertyValue', 'name': job.company.name, 'value': String(job.id) },
     'directApply': job.applicationMethod === 'platform',
   }
-  if (job.deadline) schema.validThrough = `${job.deadline.toISODate()}T23:59:59+03:00`
+  const country = countryByCode(job.location?.countryCode)
+  if (job.deadline) schema.validThrough = `${job.deadline.toISODate()}T23:59:59${country?.offset ?? '+03:00'}`
   if (job.workArrangement === 'remote') {
     schema.jobLocationType = 'TELECOMMUTE'
-    schema.applicantLocationRequirements = { '@type': 'Country', 'name': 'Qatar' }
+    schema.applicantLocationRequirements = { '@type': 'Country', 'name': country?.fullName ?? 'United Arab Emirates' }
   }
   const salary = job.publicSalary
   if (salary) {
     schema.baseSalary = {
       '@type': 'MonetaryAmount',
-      'currency': 'QAR',
+      'currency': salary.currency,
       'value': { '@type': 'QuantitativeValue', 'minValue': salary.min ?? salary.max, 'maxValue': salary.max ?? salary.min, 'unitText': 'MONTH' },
     }
   }

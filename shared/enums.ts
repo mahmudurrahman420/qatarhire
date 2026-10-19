@@ -57,18 +57,10 @@ export const Availability = labels(['immediately', 'within_1_month', 'within_3_m
 export type AvailabilityValue = (typeof Availability.values)[number]
 
 export const WorkAuthorization = labels(
-  [
-    'qatar_resident_transferable',
-    'qatar_resident_sponsored',
-    'qatari_national',
-    'gcc_national',
-    'requires_sponsorship',
-    'prefer_not_to_say',
-  ] as const,
+  ['gulf_resident_transferable', 'gulf_resident_family', 'gcc_national', 'requires_sponsorship', 'prefer_not_to_say'] as const,
   {
-    qatar_resident_transferable: 'Qatar resident (transferable)',
-    qatar_resident_sponsored: 'Qatar resident (family sponsored)',
-    qatari_national: 'Qatari national',
+    gulf_resident_transferable: 'Gulf resident (transferable visa)',
+    gulf_resident_family: 'Gulf resident (family sponsored)',
     gcc_national: 'GCC national',
     requires_sponsorship: 'Requires visa sponsorship',
     prefer_not_to_say: 'Prefer not to say',
@@ -76,10 +68,14 @@ export const WorkAuthorization = labels(
 )
 export type WorkAuthorizationValue = (typeof WorkAuthorization.values)[number]
 
-export const ProfileVisibility = labels(['private', 'discoverable'] as const, {
-  private: 'Private — hidden from employer search',
+export const ProfileVisibility = labels(['private', 'discoverable', 'public'] as const, {
+  private: 'Private — hidden from search',
   discoverable: 'Discoverable by verified employers',
+  public: 'Public — shown on the homepage and public talent search',
 })
+
+export const Gender = labels(['male', 'female'] as const, { male: 'Male', female: 'Female' })
+export type GenderValue = (typeof Gender.values)[number]
 export type ProfileVisibilityValue = (typeof ProfileVisibility.values)[number]
 
 export const ContactSharing = labels(['on_application', 'verified_employers'] as const, {
@@ -129,7 +125,7 @@ export const JobStatus = labels(
 export type JobStatusValue = (typeof JobStatus.values)[number]
 
 export const ApplicationMethod = labels(['platform', 'external_url', 'email'] as const, {
-  platform: 'Apply on QatarHire',
+  platform: 'Apply on HireMeGulf',
   external_url: 'External website',
   email: 'By email',
 })

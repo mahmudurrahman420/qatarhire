@@ -27,7 +27,7 @@ export default function Saved({ jobs, alerts }: { jobs: JobCard[]; alerts: Alert
               {alerts.map((a) => (
                 <li key={a.id} className="flex items-start justify-between gap-2 px-5 py-3">
                   <div className="min-w-0">
-                    <Link href={`/jobs?${toQuery(a.filters)}`} className="text-sm font-medium hover:text-maroon-700">{a.name}</Link>
+                    <Link href={`/jobs?${toQuery(a.filters)}`} className="text-sm font-medium hover:text-brand-700">{a.name}</Link>
                     <p className="text-[13px] text-slate">Since {date(a.createdAt)}</p>
                   </div>
                   <Button size="sm" variant="quiet" aria-label={`Delete alert ${a.name}`} onClick={() => router.delete(`/candidate/alerts/${a.id}`, { preserveScroll: true })}><Trash2 className="size-4" /></Button>

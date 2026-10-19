@@ -3,11 +3,11 @@
   <p style="margin:0 0 16px;">{{ title }}</p>
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
     @each(job in jobs)
-      <tr><td style="padding:10px 0;border-bottom:1px solid #efe9e2;">
-        <a href="{{ appUrl }}/jobs/{{ job.slug }}" style="color:#6d1631;font-weight:bold;text-decoration:none;">{{ job.title }}</a><br>
-        <span style="font-size:13px;color:#7a6f66;">{{ job.company }}</span>
+      <tr><td style="padding:10px 0;border-bottom:1px solid #e8ebf0;">
+        <a href="{{ appUrl }}/jobs/{{ job.slug }}" style="color:#0b7a3c;font-weight:bold;text-decoration:none;">{{ job.title }}</a><br>
+        <span style="font-size:13px;color:#5b6478;">{{ job.company }}</span>
       </td></tr>
     @end
   </table>
-  <p style="margin:20px 0 0;"><a href="{{ appUrl }}{{ url }}" style="color:#6d1631;">See all matching jobs</a></p>
+  <p style="margin:20px 0 0;"><a href="{{ appUrl }}{{ url }}" style="color:#0b7a3c;">See all matching jobs</a></p>
 @end

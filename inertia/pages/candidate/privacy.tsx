@@ -18,7 +18,8 @@ export default function Privacy({ settings, accessLog }: Props) {
   const form = useForm(settings)
   const del = useForm({ password: '', confirm: '' })
   const [deleting, setDeleting] = useState(false)
-  const discoverable = form.data.visibility === 'discoverable'
+  const discoverable = form.data.visibility !== 'private'
+  const isPublic = form.data.visibility === 'public'
   return (
     <AppLayout>
       <Head title="Privacy & data" />
@@ -32,7 +33,8 @@ export default function Privacy({ settings, accessLog }: Props) {
               onChange={(v) => form.setData('visibility', v)}
               options={[
                 { value: 'private', label: ProfileVisibility.label('private'), description: 'Only employers you apply to can see your profile.' },
-                { value: 'discoverable', label: ProfileVisibility.label('discoverable'), description: 'Verified employers can find a summary of your profile — headline, skills, experience and general location. Never your name in full, phone or email.' },
+                { value: 'discoverable', label: ProfileVisibility.label('discoverable'), description: 'Verified employers can find a summary of your profile — headline, skills, experience and general location. Never your full name, photo, phone or email.' },
+                { value: 'public', label: ProfileVisibility.label('public'), description: 'Anyone, including people who are not signed in, can see your card: photo, full name, position wanted, gender, city, experience and skills. Search engines may show it too.' },
               ]}
             />
             <fieldset disabled={!discoverable} className="flex flex-col gap-4 disabled:opacity-50">
@@ -43,7 +45,12 @@ export default function Privacy({ settings, accessLog }: Props) {
                 onChange={(v) => form.setData('contactSharing', v)}
                 options={ContactSharing.values.map((v) => ({ value: v, label: ContactSharing.label(v), description: v === 'on_application' ? 'Contact details stay hidden until you apply.' : 'They can see your phone and email to contact you.' }))}
               />
-              <Checkbox label="Let verified employers download my main CV" description="You'll be notified each time it's downloaded." checked={form.data.cvSearchable} onChange={(e) => form.setData('cvSearchable', e.target.checked)} />
+              <Checkbox
+                label={isPublic ? 'Let anyone download my main CV' : 'Let verified employers download my main CV'}
+                description={isPublic ? 'Anyone can download it without signing in. Your CV usually includes your phone and email, so only switch this on if you are happy for those to be public.' : "You'll be notified each time it's downloaded."}
+                checked={form.data.cvSearchable}
+                onChange={(e) => form.setData('cvSearchable', e.target.checked)}
+              />
             </fieldset>
             <div><Button type="submit" loading={form.processing} disabled={!form.isDirty}>Save privacy settings</Button></div>
           </form>
@@ -55,7 +62,7 @@ export default function Privacy({ settings, accessLog }: Props) {
               {accessLog.map((l) => (
                 <li key={l.id} className="flex items-center justify-between gap-3 px-5 py-3 text-sm">
                   <span>
-                    {l.company ? <Link href={`/companies/${l.company.slug}`} className="font-medium hover:text-maroon-700">{l.company.name}</Link> : 'An employer'}{' '}
+                    {l.company ? <Link href={`/companies/${l.company.slug}`} className="font-medium hover:text-brand-700">{l.company.name}</Link> : 'A visitor to your public profile'}{' '}
                     <span className="text-slate">{actionLabel[l.action] ?? l.action}</span>
                   </span>
                   <span className="shrink-0 text-xs text-slate">{dateTime(l.createdAt)}</span>
@@ -65,7 +72,7 @@ export default function Privacy({ settings, accessLog }: Props) {
           ) : (
             <p className="px-5 py-4 text-sm text-slate">No employer has viewed your profile yet.</p>
           )}
-          <p className="border-t border-line px-5 py-3 text-[13px] text-slate">Something wrong? <Link href="/contact" className="text-maroon-700 underline">Tell us</Link> and we'll investigate the employer.</p>
+          <p className="border-t border-line px-5 py-3 text-[13px] text-slate">Something wrong? <Link href="/contact" className="text-brand-700 underline">Tell us</Link> and we'll investigate the employer.</p>
         </Panel>
 
         <Panel title="Your data">

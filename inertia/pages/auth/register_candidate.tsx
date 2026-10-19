@@ -8,7 +8,7 @@ export default function RegisterCandidate() {
   return (
     <AuthLayout
       title="Create your job seeker profile"
-      subtitle={<>Free, and private until you choose otherwise. Hiring? <Link href="/employers/register" className="text-maroon-700 hover:underline">Register a company instead</Link>.</>}
+      subtitle={<>Free, and private until you choose otherwise. Hiring? <Link href="/employers/register" className="text-brand-700 hover:underline">Register a company instead</Link>.</>}
     >
       <form className="flex flex-col gap-4" onSubmit={(e) => { e.preventDefault(); form.post('/register', { onFinish: () => form.reset('password', 'passwordConfirmation') }) }}>
         <TextField label="Full name" autoComplete="name" value={form.data.fullName} onChange={(e) => form.setData('fullName', e.target.value)} error={form.errors.fullName} required />
@@ -18,11 +18,11 @@ export default function RegisterCandidate() {
         <Checkbox
           checked={form.data.acceptTerms}
           onChange={(e) => form.setData('acceptTerms', e.target.checked)}
-          label={<>I agree to the <Link href="/terms" target="_blank" className="text-maroon-700 underline">terms</Link> and <Link href="/privacy" target="_blank" className="text-maroon-700 underline">privacy policy</Link></>}
+          label={<>I agree to the <Link href="/terms" target="_blank" className="text-brand-700 underline">terms</Link> and <Link href="/privacy" target="_blank" className="text-brand-700 underline">privacy policy</Link></>}
         />
         {form.errors.acceptTerms && <p className="text-[13px] text-danger">Please accept the terms to continue.</p>}
         <Button type="submit" size="lg" loading={form.processing}>Create profile</Button>
-        <p className="text-center text-sm text-slate">Already registered? <Link href="/login" className="text-maroon-700 hover:underline">Sign in</Link></p>
+        <p className="text-center text-sm text-slate">Already registered? <Link href="/login" className="text-brand-700 hover:underline">Sign in</Link></p>
       </form>
     </AuthLayout>
   )

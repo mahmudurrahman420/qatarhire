@@ -15,7 +15,7 @@ export default function Audit({ tab, filters, rows }: Props) {
       <PageHeader title="Audit log" description="Security-relevant actions and every employer access to candidate profiles, contact details and CVs." />
       <nav className="mb-4 flex gap-1 border-b border-line">
         {[['audit', 'Security & admin actions'], ['access', 'Candidate data access']].map(([v, l]) => (
-          <Link key={v} href={`/admin/audit?tab=${v}`} className={cn('-mb-px border-b-2 px-3 py-2 text-sm', tab === v ? 'border-maroon-600 font-medium text-maroon-700' : 'border-transparent text-slate hover:text-ink')}>{l}</Link>
+          <Link key={v} href={`/admin/audit?tab=${v}`} className={cn('-mb-px border-b-2 px-3 py-2 text-sm', tab === v ? 'border-brand-600 font-medium text-brand-700' : 'border-transparent text-slate hover:text-ink')}>{l}</Link>
         ))}
       </nav>
       {tab === 'audit' ? (

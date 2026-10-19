@@ -32,7 +32,7 @@ export async function resetData() {
   await limiter.clear(['memory'])
 }
 
-export async function makeCandidate(opts: Partial<{ verified: boolean; visibility: 'private' | 'discoverable'; contactSharing: 'on_application' | 'verified_employers'; cvSearchable: boolean; profile: Partial<CandidateProfile>; skills: string[] }> = {}) {
+export async function makeCandidate(opts: Partial<{ verified: boolean; visibility: 'private' | 'discoverable' | 'public'; contactSharing: 'on_application' | 'verified_employers'; cvSearchable: boolean; profile: Partial<CandidateProfile>; skills: string[] }> = {}) {
   const user = await User.create({
     fullName: `Cand ${uid()} Person`,
     email: `cand-${uid()}@test.example`,

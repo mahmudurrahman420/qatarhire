@@ -11,13 +11,15 @@ import { toQuery } from '~/lib/format'
 import { useShared } from '~/lib/page'
 import type { JobCard, Paginated, Taxonomy } from '~/lib/types'
 import { cn } from '~/lib/cn'
+import { LocationSlugOptions } from '~/lib/locations'
+import { countryBySlug, GulfCountries } from '#shared/gulf'
 
 type Filters = {
   q: string; location: string; category: string; industry: string; company: string
   type: string[]; arrangement: string[]; education: string; experience: number | null
-  salary: number | null; posted: number | null; sort: string; page: number
+  salary: number | null; currency: string; posted: number | null; sort: string; page: number
 }
-type Props = { filters: Filters; results: Paginated<JobCard>; savedIds: number[]; taxonomy: Pick<Taxonomy, 'categories' | 'industries' | 'locations'> }
+type Props = { placeName: string; filters: Filters; results: Paginated<JobCard>; savedIds: number[]; taxonomy: Pick<Taxonomy, 'categories' | 'industries' | 'locations'> }
 
 function go(f: Partial<Filters>) {
   const qs = toQuery({ ...f, page: f.page && f.page > 1 ? f.page : undefined, sort: f.sort === 'relevance' ? undefined : f.sort })
@@ -28,31 +30,28 @@ function toggle(list: string[], v: string) {
   return list.includes(v) ? list.filter((x) => x !== v) : [...list, v]
 }
 
-export default function JobsIndex({ filters, results, savedIds, taxonomy }: Props) {
+export default function JobsIndex({ placeName, filters, results, savedIds, taxonomy }: Props) {
   const { auth } = useShared()
   const [q, setQ] = useState(filters.q)
   const [mobileFilters, setMobileFilters] = useState(false)
-  const [alertOpen, setAlertOpen] = useState(false)
+  const [alertOpen, setAlertOpen] = useState(() => typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('alert') === '1')
+  // salary amounts only compare within one currency: the selected country's, or the one chosen here
+  const salaryCurrency = filters.currency || countryBySlug(filters.location)?.currency || ''
+  const steps = ['KWD', 'OMR', 'BHD'].includes(salaryCurrency) ? [300, 500, 800, 1200, 1800, 2500, 3500] : [3000, 5000, 8000, 12000, 18000, 25000, 35000]
   const update = (patch: Partial<Filters>) => go({ ...filters, ...patch, page: 1 })
 
   const active =
     [filters.location, filters.category, filters.industry, filters.company, filters.education].filter(Boolean).length +
     filters.type.length + filters.arrangement.length + [filters.experience, filters.salary, filters.posted].filter((v) => v !== null).length
 
-  const pill = (on: boolean) => cn('rounded-full border px-3 py-1 text-[13px] transition-colors', on ? 'border-maroon-600 bg-maroon-600 text-white' : 'border-line bg-white hover:border-slate/40')
+  const pill = (on: boolean) => cn('rounded-full border px-3 py-1 text-[13px] transition-colors', on ? 'border-brand-600 bg-brand-600 text-white' : 'border-line bg-white hover:border-slate/40')
 
   const filterPanel = (
     <div className="flex flex-col gap-6">
       <fieldset>
         <legend className="mb-2 text-sm font-medium">Location</legend>
         <select className={cn(controlClass, 'h-10')} value={filters.location} onChange={(e) => update({ location: e.target.value })} aria-label="Location">
-          <option value="">All of Qatar</option>
-          {taxonomy.locations.map((m) => (
-            <optgroup key={m.slug} label={m.name}>
-              <option value={m.slug}>All of {m.name}</option>
-              {m.areas.map((a) => <option key={a.slug} value={a.slug}>{a.name}</option>)}
-            </optgroup>
-          ))}
+          <LocationSlugOptions locations={taxonomy.locations} />
         </select>
       </fieldset>
       <fieldset>
@@ -89,11 +88,17 @@ export default function JobsIndex({ filters, results, savedIds, taxonomy }: Prop
       </fieldset>
       <fieldset>
         <legend className="mb-2 text-sm font-medium">Minimum monthly salary</legend>
-        <select className={cn(controlClass, 'h-10')} value={filters.salary ?? ''} onChange={(e) => update({ salary: e.target.value ? Number(e.target.value) : null })} aria-label="Minimum monthly salary">
-          <option value="">Any salary</option>
-          {[3000, 5000, 8000, 12000, 18000, 25000, 35000].map((s) => <option key={s} value={s}>QAR {s.toLocaleString('en')}+</option>)}
-        </select>
-        <p className="mt-1.5 text-xs text-slate">Only includes jobs that state a salary.</p>
+        <div className="grid grid-cols-[92px_1fr] gap-2">
+          <select className={cn(controlClass, 'h-10')} value={salaryCurrency} onChange={(e) => update({ currency: e.target.value, salary: null })} aria-label="Salary currency">
+            <option value="">Currency</option>
+            {GulfCountries.map((c) => <option key={c.currency} value={c.currency}>{c.currency}</option>)}
+          </select>
+          <select className={cn(controlClass, 'h-10')} disabled={!salaryCurrency} value={filters.salary ?? ''} onChange={(e) => update({ salary: e.target.value ? Number(e.target.value) : null, currency: salaryCurrency })} aria-label="Minimum monthly salary">
+            <option value="">Any salary</option>
+            {steps.map((s) => <option key={s} value={s}>{s.toLocaleString('en')}+</option>)}
+          </select>
+        </div>
+        <p className="mt-1.5 text-xs text-slate">{salaryCurrency ? 'Only includes jobs that state a salary in this currency.' : 'Pick a country or currency first.'}</p>
       </fieldset>
       <fieldset>
         <legend className="mb-2 text-sm font-medium">My experience</legend>
@@ -127,7 +132,7 @@ export default function JobsIndex({ filters, results, savedIds, taxonomy }: Prop
     update({ q })
   }
 
-  const title = filters.q ? `${filters.q} jobs in Qatar` : 'Jobs in Qatar'
+  const title = `${filters.q ? `${filters.q} jobs` : 'Jobs'} in ${placeName}`
   return (
     <SiteLayout>
       <Head title={title} />
@@ -145,7 +150,7 @@ export default function JobsIndex({ filters, results, savedIds, taxonomy }: Prop
           <aside className="hidden lg:block" aria-label="Filters">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="font-sans text-base font-semibold tracking-normal">Filters</h2>
-              {active > 0 && <Link href={filters.q ? `/jobs?q=${encodeURIComponent(filters.q)}` : '/jobs'} className="text-sm text-maroon-700 hover:underline">Clear all</Link>}
+              {active > 0 && <Link href={filters.q ? `/jobs?q=${encodeURIComponent(filters.q)}` : '/jobs'} className="text-sm text-brand-700 hover:underline">Clear all</Link>}
             </div>
             {filterPanel}
           </aside>
@@ -176,13 +181,13 @@ export default function JobsIndex({ filters, results, savedIds, taxonomy }: Prop
 
             {active > 0 && (
               <div className="mb-4 flex flex-wrap gap-2">
-                {filters.location && <Chip label={`Location: ${filters.location.replace(/-/g, ' ')}`} onRemove={() => update({ location: '' })} />}
+                {filters.location && <Chip label={`Location: ${placeName}`} onRemove={() => update({ location: '' })} />}
                 {filters.category && <Chip label={taxonomy.categories.find((c) => c.slug === filters.category)?.name ?? filters.category} onRemove={() => update({ category: '' })} />}
                 {filters.industry && <Chip label={taxonomy.industries.find((c) => c.slug === filters.industry)?.name ?? filters.industry} onRemove={() => update({ industry: '' })} />}
                 {filters.company && <Chip label={`Company: ${filters.company.replace(/-/g, ' ')}`} onRemove={() => update({ company: '' })} />}
                 {filters.type.map((t) => <Chip key={t} label={EmploymentType.label(t as never)} onRemove={() => update({ type: filters.type.filter((x) => x !== t) })} />)}
                 {filters.arrangement.map((t) => <Chip key={t} label={WorkArrangement.label(t as never)} onRemove={() => update({ arrangement: filters.arrangement.filter((x) => x !== t) })} />)}
-                {filters.salary !== null && <Chip label={`QAR ${filters.salary.toLocaleString('en')}+`} onRemove={() => update({ salary: null })} />}
+                {filters.salary !== null && <Chip label={`${salaryCurrency} ${filters.salary.toLocaleString('en')}+`} onRemove={() => update({ salary: null })} />}
                 {filters.experience !== null && <Chip label={`${filters.experience} yrs experience`} onRemove={() => update({ experience: null })} />}
                 {filters.education && <Chip label={EducationLevel.label(filters.education as never)} onRemove={() => update({ education: '' })} />}
                 {filters.posted !== null && <Chip label={`Last ${filters.posted} day${filters.posted > 1 ? 's' : ''}`} onRemove={() => update({ posted: null })} />}
@@ -201,7 +206,7 @@ export default function JobsIndex({ filters, results, savedIds, taxonomy }: Prop
                 title="No jobs match this search"
                 action={<ButtonLink href="/jobs" variant="secondary">Clear search and filters</ButtonLink>}
               >
-                Try fewer filters, a broader location such as "All of Doha", or a shorter keyword — for example "accountant" instead of "senior chartered accountant".
+                Try fewer filters, a broader location such as a whole country, or a shorter keyword — for example "accountant" instead of "senior chartered accountant".
                 {auth?.role === 'candidate' && ' You can also create an alert and we will email you when a match is posted.'}
               </EmptyState>
             )}
@@ -234,7 +239,7 @@ function Chip({ label, onRemove }: { label: string; onRemove: () => void }) {
 }
 
 function AlertModal({ open, onClose, filters }: { open: boolean; onClose: () => void; filters: Filters }) {
-  const form = useForm({ name: filters.q || 'Jobs in Qatar', query: toQuery({ ...filters, page: '', sort: '' }) })
+  const form = useForm({ name: filters.q || 'Jobs in the Gulf', query: toQuery({ ...filters, page: '', sort: '' }) })
   return (
     <Modal open={open} onClose={onClose} title="Email me new jobs for this search">
       <form

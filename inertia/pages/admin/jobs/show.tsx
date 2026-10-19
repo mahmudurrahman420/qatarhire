@@ -24,7 +24,7 @@ export default function AdminJob({ job, company, reports }: Props) {
       <PageHeader title={job.title} back={{ href: '/admin/jobs', label: 'Job moderation' }} actions={<JobStatusBadge status={job.status} expired={job.isExpired} />} />
       <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
         <Panel>
-          <p className="text-sm text-slate"><Link href={`/admin/companies/${company.id}`} className="font-medium text-ink hover:text-maroon-700">{company.name}</Link> — {job.location} — {EmploymentType.label(job.employmentType as never)} — {salaryText(job.salary) ?? 'Salary not shown'}</p>
+          <p className="text-sm text-slate"><Link href={`/admin/companies/${company.id}`} className="font-medium text-ink hover:text-brand-700">{company.name}</Link> — {job.location} — {EmploymentType.label(job.employmentType as never)} — {salaryText(job.salary) ?? 'Salary not shown'}</p>
           <div className="mt-2"><VerificationBadge status={company.verificationStatus} /></div>
           {job.applicationMethod !== 'platform' && <p className="mt-3 rounded-ctl bg-amber-50 px-3 py-2 text-[13px] text-amber">Applies off-platform: {job.applicationUrl ?? job.applicationEmail}. Check the destination is legitimate.</p>}
           <div className="mt-5"><RichText text={job.description} /></div>
@@ -58,7 +58,7 @@ export default function AdminJob({ job, company, reports }: Props) {
           <Panel title={`Reports (${reports.length})`}>
             {reports.length ? <ul className="flex flex-col gap-2 text-sm">{reports.map((r) => <li key={r.id}><span className="font-medium">{ReportReason.label(r.reason as never)}</span> <span className="text-[12px] text-slate">{date(r.createdAt)}, {r.status}</span>{r.details && <p className="text-slate">{r.details}</p>}</li>)}</ul> : <p className="text-sm text-slate">No reports.</p>}
           </Panel>
-          <Link href={`/jobs/${job.slug}`} className="text-sm text-maroon-700 hover:underline">Open public page</Link>
+          <Link href={`/jobs/${job.slug}`} className="text-sm text-brand-700 hover:underline">Open public page</Link>
         </aside>
       </div>
     </AppLayout>

@@ -2,12 +2,11 @@ import { Link } from '@inertiajs/react'
 import { useEffect, useRef, type ReactNode } from 'react'
 import { X } from 'lucide-react'
 import { cn } from '~/lib/cn'
-import { initials } from '~/lib/format'
 
-type Tone = 'neutral' | 'maroon' | 'gulf' | 'amber' | 'danger' | 'dune'
+type Tone = 'neutral' | 'brand' | 'gulf' | 'amber' | 'danger' | 'dune'
 const tones: Record<Tone, string> = {
   neutral: 'bg-pearl text-slate ring-line',
-  maroon: 'bg-maroon-50 text-maroon-700 ring-maroon-100',
+  brand: 'bg-brand-50 text-brand-700 ring-brand-100',
   gulf: 'bg-gulf-50 text-gulf ring-gulf/15',
   amber: 'bg-amber-50 text-amber ring-amber/15',
   danger: 'bg-danger-50 text-danger ring-danger/15',
@@ -91,12 +90,18 @@ export function Modal({ open, onClose, title, children, wide }: { open: boolean;
   )
 }
 
+const LOGO_COLORS = ['#1f6fe5', '#7c3aed', '#e0353b', '#f59e0b', '#0d9488', '#db2777', '#2563eb', '#ea580c']
+
+/** Company logo, or a coloured initial tile (deterministic per company name). */
 export function CompanyLogo({ name, url, size = 44 }: { name: string; url: string | null; size?: number }) {
-  return url ? (
-    <img src={url} alt="" width={size} height={size} loading="lazy" className="shrink-0 rounded-ctl border border-line bg-white object-contain" style={{ width: size, height: size }} />
-  ) : (
-    <span aria-hidden className="grid shrink-0 place-items-center rounded-ctl bg-dune font-display text-sm font-bold text-maroon-700" style={{ width: size, height: size }}>
-      {initials(name)}
+  if (url) {
+    return <img src={url} alt="" width={size} height={size} loading="lazy" className="shrink-0 rounded-ctl border border-line bg-white object-contain" style={{ width: size, height: size }} />
+  }
+  let h = 0
+  for (const ch of name) h = (h * 31 + ch.charCodeAt(0)) >>> 0
+  return (
+    <span aria-hidden className="grid shrink-0 place-items-center rounded-ctl font-display font-bold text-white" style={{ width: size, height: size, background: LOGO_COLORS[h % LOGO_COLORS.length], fontSize: size * 0.45 }}>
+      {name.trim()[0]?.toUpperCase()}
     </span>
   )
 }
@@ -106,7 +111,7 @@ export function PageHeader({ title, description, actions, back }: { title: React
     <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
       <div className="min-w-0">
         {back && (
-          <Link href={back.href} className="mb-2 inline-block text-sm text-slate hover:text-maroon-700">
+          <Link href={back.href} className="mb-2 inline-block text-sm text-slate hover:text-brand-700">
             {back.label}
           </Link>
         )}

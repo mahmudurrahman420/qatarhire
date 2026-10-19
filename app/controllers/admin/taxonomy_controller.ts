@@ -38,7 +38,8 @@ export default class AdminTaxonomyController {
     const query = (cfg.model as typeof Industry).query().orderBy('name')
     if (params.type === 'skills' && pendingOnly) query.where('is_approved', false)
     const rows = await query.limit(1000)
-    const municipalities = params.type === 'locations' ? await Location.query().where('kind', 'municipality').orderBy('sort_order') : []
+    // locations can be added under a country (city) or a city (district)
+    const parents = params.type === 'locations' ? await Location.query().whereIn('kind', ['country', 'city']).orderBy('country_code').orderBy('kind').orderBy('name') : []
     return inertia.render('admin/taxonomy', {
       type: params.type,
       pendingOnly,
@@ -49,8 +50,9 @@ export default class AdminTaxonomyController {
         active: r.isActive ?? r.isApproved ?? true,
         parentId: r.parentId ?? null,
         kind: r.kind ?? null,
+        label: r.displayName ?? r.name,
       })),
-      municipalities: municipalities.map((m) => ({ id: m.id, name: m.name })),
+      parents: parents.map((m) => ({ id: m.id, name: m.displayName, kind: m.kind })),
     })
   }
 
@@ -68,8 +70,16 @@ export default class AdminTaxonomyController {
     if (params.type === 'skills') attrs.isApproved = true
     else attrs.isActive = true
     if (params.type === 'locations') {
-      attrs.parentId = data.parentId ?? null
-      attrs.kind = data.parentId ? 'area' : 'municipality'
+      const parent = data.parentId ? await Location.find(data.parentId) : null
+      if (!parent || parent.kind === 'area') {
+        session.flashErrors({ parentId: 'Choose the country or city this location belongs to.' })
+        return response.redirect().back()
+      }
+      attrs.parentId = parent.id
+      attrs.kind = parent.kind === 'country' ? 'city' : 'area'
+      attrs.countryCode = parent.countryCode
+      attrs.displayName = `${data.name}, ${parent.displayName}`
+      if (await Location.findBy('slug', slug)) attrs.slug = `${slug}-${parent.slug}`
     }
     const row = await (cfg.model as any).create(attrs)
     Taxonomy.clear()
@@ -78,12 +88,24 @@ export default class AdminTaxonomyController {
   }
 
   async update(ctx: HttpContext) {
-    const { params, request, response } = ctx
+    const { params, request, response, session } = ctx
     const cfg = this.resolve(params.type)
     if (!cfg) return response.notFound()
     const row = await (cfg.model as any).findOrFail(params.id)
     const data = await request.validateUsing(itemValidator)
+    if (params.type === 'locations' && row.kind === 'country' && row.name !== data.name) {
+      session.flash('error', 'Countries are fixed. Rename cities and districts instead.')
+      return response.redirect().back()
+    }
     row.name = data.name
+    if (params.type === 'locations' && row.parentId) {
+      const parent = await Location.findOrFail(row.parentId)
+      row.displayName = `${data.name}, ${parent.displayName}`
+      for (const child of await Location.query().where('parent_id', row.id)) {
+        child.displayName = `${child.name}, ${row.displayName}`
+        await child.save()
+      }
+    }
     if (data.active !== undefined) {
       if (params.type === 'skills') row.isApproved = data.active
       else row.isActive = data.active
@@ -108,7 +130,7 @@ export default class AdminTaxonomyController {
       }
     }
     if (params.type === 'locations' && (await Location.query().where('parent_id', row.id).first())) {
-      session.flash('error', 'Remove the areas inside this municipality first.')
+      session.flash('error', 'Remove the cities or districts inside this location first.')
       return response.redirect().back()
     }
     await row.delete()

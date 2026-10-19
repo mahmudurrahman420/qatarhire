@@ -1,4 +1,4 @@
-# QatarHire — production image (AdonisJS 6 + Inertia/React, SQLite or MySQL)
+# HireMeGulf — production image (AdonisJS 6 + Inertia/React, SQLite or MySQL)
 # Build:  docker build -t qatarhire .
 # Run:    docker run -p 3333:3333 -e APP_KEY=... -e APP_URL=https://your.domain -v qh-data:/var/data qatarhire
 
@@ -26,13 +26,13 @@ ENV NODE_ENV=production \
     PORT=3333 \
     TZ=UTC \
     LOG_LEVEL=info \
-    APP_NAME=QatarHire \
+    APP_NAME=HireMeGulf \
     SESSION_DRIVER=database \
     DB_CONNECTION=sqlite \
     MAIL_MAILER=log \
-    MAIL_FROM_ADDRESS=no-reply@qatarhire.local \
-    MAIL_FROM_NAME=QatarHire \
-    SUPPORT_EMAIL=support@qatarhire.local \
+    MAIL_FROM_ADDRESS=no-reply@hiremegulf.local \
+    MAIL_FROM_NAME=HireMeGulf \
+    SUPPORT_EMAIL=support@hiremegulf.local \
     QUEUE_DRIVER=sync \
     LIMITER_STORE=database \
     DRIVE_DISK=public \

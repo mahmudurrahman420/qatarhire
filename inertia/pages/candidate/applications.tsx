@@ -24,7 +24,7 @@ export default function Applications({ applications }: { applications: App[] }) 
               <div className="flex flex-wrap items-start gap-4">
                 {a.job.company && <CompanyLogo name={a.job.company.name} url={a.job.company.logoUrl} />}
                 <div className="min-w-0 flex-1">
-                  <Link href={`/jobs/${a.job.slug}`} className="font-medium hover:text-maroon-700">{a.job.title}</Link>
+                  <Link href={`/jobs/${a.job.slug}`} className="font-medium hover:text-brand-700">{a.job.title}</Link>
                   <p className="text-sm text-slate">{a.job.company?.name}{a.job.location ? `, ${a.job.location}` : ''}</p>
                   <p className="mt-1 text-[13px] text-slate">Applied {date(a.createdAt)}{a.cv ? ` with "${a.cv.label}"` : ' without a CV'}</p>
                 </div>
@@ -47,7 +47,7 @@ export default function Applications({ applications }: { applications: App[] }) 
         </ul>
       ) : (
         <EmptyState title="No applications yet" action={<ButtonLink href="/jobs">Find jobs</ButtonLink>}>
-          When you apply for a job on QatarHire it appears here with live status updates from the employer.
+          When you apply for a job on hiremegulf.com it appears here with live status updates from the employer.
         </EmptyState>
       )}
     </AppLayout>
