@@ -40,6 +40,10 @@ if [ "$SEED_DEMO" = "true" ]; then
   NODE_ENV=development node ace db:seed --files database/seeders/02_demo_seeder.js
 fi
 
+# EMAIL_VERIFICATION_REQUIRED (default false): while it's off, verify every active user that is
+# still unverified. Idempotent; suspended users and already-verified dates are never touched.
+node ace users:auto-verify
+
 # Optional admin bootstrap: set ADMIN_EMAIL + ADMIN_PASSWORD (min 10 chars).
 if [ -n "$ADMIN_EMAIL" ] && [ -n "$ADMIN_PASSWORD" ]; then
   node ace admin:create --email="$ADMIN_EMAIL" --name="${ADMIN_NAME:-Site Admin}"

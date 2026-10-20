@@ -56,6 +56,9 @@ export default await Env.create(new URL('../', import.meta.url), {
   /* Initial administrator created by `node ace admin:create` defaults */
   ADMIN_EMAIL: Env.schema.string.optional(),
 
+  /* Email verification gate. Default false: accounts are verified at sign-up (no inbox needed). */
+  EMAIL_VERIFICATION_REQUIRED: Env.schema.boolean.optional(),
+
   /* Social sign-in: each provider is shown only when both values are set */
   GOOGLE_CLIENT_ID: Env.schema.string.optional(),
   GOOGLE_CLIENT_SECRET: Env.schema.string.optional(),

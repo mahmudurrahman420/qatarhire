@@ -4,10 +4,15 @@ import UserToken from '#models/user_token'
 import EmailVerification from '#services/email_verification'
 import AuditLogger from '#services/audit_logger'
 import { homeFor } from '#controllers/auth/session_controller'
+import { emailVerificationRequired } from '#services/auth_settings'
 
 export default class EmailVerificationController {
   async notice({ inertia, auth, response }: HttpContext) {
     const user = auth.getUserOrFail()
+    if (!user.isVerified && !emailVerificationRequired()) {
+      user.emailVerifiedAt = DateTime.now()
+      await user.save()
+    }
     if (user.isVerified) return response.redirect().toPath(homeFor(user))
     return inertia.render('auth/verify_email', { email: user.email })
   }

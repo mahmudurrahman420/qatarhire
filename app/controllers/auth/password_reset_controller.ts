@@ -4,18 +4,25 @@ import env from '#start/env'
 import User from '#models/user'
 import UserToken from '#models/user_token'
 import Mailer from '#services/mailer'
+import { mailDeliverable, supportEmail } from '#services/auth_settings'
 import AuditLogger from '#services/audit_logger'
 import { forgotPasswordValidator, resetPasswordValidator } from '#validators/auth'
 
 export default class PasswordResetController {
   async showForgot({ inertia }: HttpContext) {
-    return inertia.render('auth/forgot_password')
+    return inertia.render('auth/forgot_password', { mailEnabled: mailDeliverable(), supportEmail: supportEmail() })
   }
 
   /** Always responds identically so the form cannot be used to discover accounts. */
   async sendLink(ctx: HttpContext) {
     const { request, response, session } = ctx
     const { email } = await request.validateUsing(forgotPasswordValidator)
+    if (!mailDeliverable()) {
+      // Email delivery isn't set up (MAIL_MAILER=log): don't claim a link was sent.
+      const support = supportEmail()
+      session.flash('error', `We can't send reset emails right now. Please contact support${support ? ` at ${support}` : ''} and we'll help you get back in.`)
+      return response.redirect().back()
+    }
     const user = await User.findBy('email', email)
     if (user && user.status === 'active') {
       const token = await UserToken.issue(user, 'password_reset', 60)

@@ -3,8 +3,22 @@ import AuthLayout from '~/layouts/auth_layout'
 import { Button } from '~/components/ui/button'
 import { TextField } from '~/components/ui/form'
 
-export default function ForgotPassword() {
+export default function ForgotPassword({ mailEnabled = true, supportEmail = null }: { mailEnabled?: boolean; supportEmail?: string | null }) {
   const form = useForm({ email: '' })
+  if (!mailEnabled)
+    return (
+      <AuthLayout title="Reset your password" subtitle="Password reset emails aren't available right now.">
+        <div className="flex flex-col gap-4">
+          <p className="text-[15px] text-ink">
+            Please contact support{supportEmail && <> at <a href={`mailto:${supportEmail}`} className="text-brand-700 underline">{supportEmail}</a></>} from the email address on your account and we'll help you get back in.
+          </p>
+          <div className="flex items-center justify-between">
+            <Link href="/login" className="text-sm text-brand-700 hover:underline">Back to sign in</Link>
+            <Link href="/contact" className="text-sm text-brand-700 hover:underline">Contact support</Link>
+          </div>
+        </div>
+      </AuthLayout>
+    )
   return (
     <AuthLayout title="Reset your password" subtitle="Enter your account email and we'll send a reset link.">
       <form className="flex flex-col gap-4" onSubmit={(e) => { e.preventDefault(); form.post('/forgot-password') }}>

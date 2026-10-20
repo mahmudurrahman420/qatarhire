@@ -10,6 +10,9 @@ import AuditLogger from '#services/audit_logger'
 import SettingsService from '#services/settings_service'
 import { createCompanyFor } from '#services/company_setup'
 import { enabledSocialProviders } from '#services/social_providers'
+import { emailVerificationRequired } from '#services/auth_settings'
+import { DateTime } from 'luxon'
+import { homeFor } from '#controllers/auth/session_controller'
 
 export default class RegisterController {
   async showCandidate({ inertia }: HttpContext) {
@@ -24,15 +27,16 @@ export default class RegisterController {
       session.flashExcept(['password', 'passwordConfirmation'])
       return response.redirect().back()
     }
+    const required = emailVerificationRequired()
     const user = await db.transaction(async (trx) => {
-      const u = await User.create({ fullName: data.fullName, email: data.email, password: data.password, role: 'candidate', status: 'active' }, { client: trx })
+      const u = await User.create({ fullName: data.fullName, email: data.email, password: data.password, role: 'candidate', status: 'active', emailVerifiedAt: required ? null : DateTime.now() }, { client: trx })
       await CandidateProfile.create({ userId: u.id, contactEmail: u.email }, { client: trx })
       return u
     })
-    await EmailVerification.send(user)
+    if (required) await EmailVerification.send(user)
     await AuditLogger.log('auth.register', { ctx, actorId: user.id, subject: { type: 'user', id: user.id }, meta: { role: 'candidate' } })
     await auth.use('web').login(user)
-    return response.redirect().toPath('/verify-email')
+    return response.redirect().toPath(required ? '/verify-email' : homeFor(user))
   }
 
   async showEmployer({ inertia, response, session }: HttpContext) {
@@ -56,14 +60,15 @@ export default class RegisterController {
       session.flashExcept(['password', 'passwordConfirmation'])
       return response.redirect().back()
     }
+    const required = emailVerificationRequired()
     const user = await db.transaction(async (trx) => {
-      const u = await User.create({ fullName: data.fullName, email: data.email, password: data.password, role: 'employer', status: 'active' }, { client: trx })
+      const u = await User.create({ fullName: data.fullName, email: data.email, password: data.password, role: 'employer', status: 'active', emailVerifiedAt: required ? null : DateTime.now() }, { client: trx })
       await createCompanyFor(u, data, { name: data.fullName, email: data.email }, trx)
       return u
     })
-    await EmailVerification.send(user)
+    if (required) await EmailVerification.send(user)
     await AuditLogger.log('auth.register', { ctx, actorId: user.id, subject: { type: 'user', id: user.id }, meta: { role: 'employer' } })
     await auth.use('web').login(user)
-    return response.redirect().toPath('/verify-email')
+    return response.redirect().toPath(required ? '/verify-email' : homeFor(user))
   }
 }
