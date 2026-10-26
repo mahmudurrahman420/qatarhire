@@ -57,6 +57,7 @@ const AdminJobs = () => import('#controllers/admin/jobs_controller')
 const AdminReports = () => import('#controllers/admin/reports_controller')
 const AdminTaxonomy = () => import('#controllers/admin/taxonomy_controller')
 const AdminSettings = () => import('#controllers/admin/settings_controller')
+const AdminEmailSettings = () => import('#controllers/admin/email_settings_controller')
 const AdminAudit = () => import('#controllers/admin/audit_controller')
 
 /* ---------------------------------------------------------------- public */
@@ -241,6 +242,10 @@ router
     router.delete('/taxonomy/:type/:id', [AdminTaxonomy, 'destroy'])
     router.get('/settings', [AdminSettings, 'show'])
     router.put('/settings', [AdminSettings, 'update'])
+    router.get('/settings/email', [AdminEmailSettings, 'show'])
+    router.post('/settings/email', [AdminEmailSettings, 'update'])
+    router.post('/settings/email/test', [AdminEmailSettings, 'test'])
+    router.post('/settings/email/clear-token', [AdminEmailSettings, 'clearToken'])
     router.post('/queue/:id/retry', [AdminSettings, 'retryJob'])
     router.get('/audit', [AdminAudit, 'index'])
   })

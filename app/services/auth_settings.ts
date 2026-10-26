@@ -1,3 +1,4 @@
+import EmailSettings from '#services/email_settings'
 /**
  * Runtime auth switches, read from process.env per call (the env file is loaded into
  * process.env at boot) so tests can toggle them.
@@ -13,7 +14,8 @@ export function emailVerificationRequired() {
  * False in production while MAIL_MAILER=log: nothing actually reaches an inbox.
  * (In development/test the log mailer writes previews, so flows keep working.)
  */
-export function mailDeliverable() {
+export async function mailDeliverable() {
+  if (await EmailSettings.configured()) return true
   const logOnly = (process.env.MAIL_MAILER ?? 'log').trim().toLowerCase() === 'log'
   return !(logOnly && process.env.NODE_ENV === 'production')
 }

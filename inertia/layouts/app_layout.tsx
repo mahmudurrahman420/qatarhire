@@ -2,7 +2,7 @@ import { Link, router, usePage } from '@inertiajs/react'
 import { useState, type ReactNode } from 'react'
 import {
   Bell, Briefcase, Building2, ClipboardList, Flag, Gauge, Heart, LayoutDashboard, ListChecks, LogOut, Menu,
-  Search, Settings, Shield, Tags, UserRound, Users, X, Receipt, ScrollText, BookmarkCheck,
+  Search, Settings, Shield, Tags, UserRound, Users, X, Receipt, ScrollText, BookmarkCheck, Mail,
 } from 'lucide-react'
 import { useShared } from '~/lib/page'
 import { Wordmark } from '~/components/brand'
@@ -22,7 +22,8 @@ function navFor(role: string, memberRole?: string): Item[] {
       { href: '/admin/users', label: 'Users', icon: Users },
       { href: '/admin/taxonomy/categories', label: 'Categories & lists', icon: Tags },
       { href: '/admin/audit', label: 'Audit log', icon: ScrollText },
-      { href: '/admin/settings', label: 'Platform settings', icon: Settings },
+      { href: '/admin/settings', label: 'Platform settings', icon: Settings, exact: true },
+      { href: '/admin/settings/email', label: 'Email settings', icon: Mail },
     ]
   if (role === 'employer')
     return [

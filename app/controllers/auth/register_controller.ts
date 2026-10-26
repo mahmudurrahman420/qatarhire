@@ -5,7 +5,7 @@ import CandidateProfile from '#models/candidate_profile'
 import Industry from '#models/industry'
 import Location from '#models/location'
 import { candidateRegisterValidator, employerRegisterValidator } from '#validators/auth'
-import EmailVerification from '#services/email_verification'
+import EmailVerification, { sendSignupEmail } from '#services/email_verification'
 import AuditLogger from '#services/audit_logger'
 import SettingsService from '#services/settings_service'
 import { createCompanyFor } from '#services/company_setup'
@@ -34,6 +34,7 @@ export default class RegisterController {
       return u
     })
     if (required) await EmailVerification.send(user)
+    else await sendSignupEmail(user)
     await AuditLogger.log('auth.register', { ctx, actorId: user.id, subject: { type: 'user', id: user.id }, meta: { role: 'candidate' } })
     await auth.use('web').login(user)
     return response.redirect().toPath(required ? '/verify-email' : homeFor(user))
@@ -67,6 +68,7 @@ export default class RegisterController {
       return u
     })
     if (required) await EmailVerification.send(user)
+    else await sendSignupEmail(user)
     await AuditLogger.log('auth.register', { ctx, actorId: user.id, subject: { type: 'user', id: user.id }, meta: { role: 'employer' } })
     await auth.use('web').login(user)
     return response.redirect().toPath(required ? '/verify-email' : homeFor(user))

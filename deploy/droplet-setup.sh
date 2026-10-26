@@ -52,6 +52,21 @@ fi
 
 echo "Building image (a few minutes)"
 docker build -q -t qatarhire "$APP_DIR"
+# Data safety: the DB and uploads live in the named volume qatarhire-data (/var/data in the container),
+# which is never removed here. Before swapping containers, stop the old one (so SQLite is consistent)
+# and take a timestamped copy of the DB into /var/data/backups (keeps the 15 newest pre-deploy copies).
+if docker volume inspect qatarhire-data >/dev/null 2>&1; then
+  VOL=$(docker volume inspect -f '{{ .Mountpoint }}' qatarhire-data)
+  docker stop -t 20 qatarhire >/dev/null 2>&1 || true
+  if [ -f "$VOL/tmp/db.sqlite3" ]; then
+    ts=$(date -u +%Y%m%d-%H%M%S); mkdir -p "$VOL/backups"
+    for ext in "" "-wal" "-shm"; do
+      if [ -f "$VOL/tmp/db.sqlite3$ext" ]; then cp -p "$VOL/tmp/db.sqlite3$ext" "$VOL/backups/predeploy-$ts.sqlite3$ext"; fi
+    done
+    echo "DB backed up to /var/data/backups/predeploy-$ts.sqlite3 ($(du -h "$VOL/backups/predeploy-$ts.sqlite3" | cut -f1))"
+    ls -1t "$VOL"/backups/predeploy-*.sqlite3 2>/dev/null | tail -n +16 | while read -r f; do rm -f "$f" "$f-wal" "$f-shm"; done
+  fi
+fi
 docker rm -f qatarhire >/dev/null 2>&1 || true
 docker run -d --name qatarhire --restart unless-stopped --memory 1g \
   -p 127.0.0.1:$PORT_LOCAL:3333 --env-file "$ENVF" -v qatarhire-data:/var/data qatarhire >/dev/null

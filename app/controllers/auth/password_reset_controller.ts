@@ -10,14 +10,14 @@ import { forgotPasswordValidator, resetPasswordValidator } from '#validators/aut
 
 export default class PasswordResetController {
   async showForgot({ inertia }: HttpContext) {
-    return inertia.render('auth/forgot_password', { mailEnabled: mailDeliverable(), supportEmail: supportEmail() })
+    return inertia.render('auth/forgot_password', { mailEnabled: await mailDeliverable(), supportEmail: supportEmail() })
   }
 
   /** Always responds identically so the form cannot be used to discover accounts. */
   async sendLink(ctx: HttpContext) {
     const { request, response, session } = ctx
     const { email } = await request.validateUsing(forgotPasswordValidator)
-    if (!mailDeliverable()) {
+    if (!(await mailDeliverable())) {
       // Email delivery isn't set up (MAIL_MAILER=log): don't claim a link was sent.
       const support = supportEmail()
       session.flash('error', `We can't send reset emails right now. Please contact support${support ? ` at ${support}` : ''} and we'll help you get back in.`)

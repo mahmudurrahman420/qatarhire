@@ -1,6 +1,7 @@
 import env from '#start/env'
 import mail from '@adonisjs/mail/services/main'
 import Queue from '#services/queue'
+import EmailSettings from '#services/email_settings'
 
 export type MailJob = {
   to: string
@@ -18,7 +19,9 @@ export default class Mailer {
   static async deliver(job: MailJob) {
     const appName = env.get('APP_NAME', 'HireMeGulf')
     const appUrl = env.get('APP_URL')
-    await mail.send((message) => {
+    // ZeptoMail (HTTPS API) when a token is configured; otherwise the MAIL_MAILER default (log).
+    const mailer = (await EmailSettings.configured()) ? mail.use('zeptomail') : mail.use()
+    await mailer.send((message) => {
       message
         .to(job.to)
         .subject(job.subject)

@@ -1,6 +1,7 @@
 import env from '#start/env'
 import { defineConfig, transports } from '@adonisjs/mail'
 import { LogTransport } from '#services/mail/log_transport'
+import { ZeptoMailTransport } from '#services/mail/zeptomail_transport'
 
 const mailConfig = defineConfig({
   default: env.get('MAIL_MAILER'),
@@ -15,6 +16,7 @@ const mailConfig = defineConfig({
         : undefined,
     }),
     log: () => new LogTransport(),
+    zeptomail: () => new ZeptoMailTransport(),
   },
 })
 
