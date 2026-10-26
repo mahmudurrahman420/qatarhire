@@ -4,7 +4,7 @@ import ace from '@adonisjs/core/services/ace'
 import User from '#models/user'
 import UserToken from '#models/user_token'
 import UserVerification from '#services/user_verification'
-import { makeCandidate, resetData } from '#tests/helpers'
+import { makeCandidate, resetData, signupWithOtp } from '#tests/helpers'
 
 async function withEnv<T>(vars: Record<string, string | undefined>, fn: () => Promise<T>) {
   const saved = Object.keys(vars).map((k) => [k, process.env[k]] as const)
@@ -22,10 +22,8 @@ test.group('EMAIL_VERIFICATION_REQUIRED off (default)', (group) => {
 
   test('candidate signup is verified and lands on the dashboard, no verify gate', async ({ client, assert }) => {
     await withEnv(OFF, async () => {
-      const res = await client.post('/register')
-        .form({ fullName: 'Shaid Uli', email: 'shaid@example.com', password: 'longpassword1', passwordConfirmation: 'longpassword1', acceptTerms: 'on' })
-        .withCsrfToken().redirects(0)
-      assert.equal(res.header('location'), '/candidate')
+      const { final: res } = await signupWithOtp(client, '/register', { fullName: 'Shaid Uli', email: 'shaid@example.com', password: 'longpassword1', passwordConfirmation: 'longpassword1', acceptTerms: 'on' })
+      assert.equal(res!.header('location'), '/candidate')
       const user = await User.findByOrFail('email', 'shaid@example.com')
       assert.isNotNull(user.emailVerifiedAt)
       assert.isNull(await UserToken.query().where('user_id', user.id).where('type', 'verify_email').first())
@@ -36,10 +34,8 @@ test.group('EMAIL_VERIFICATION_REQUIRED off (default)', (group) => {
 
   test('employer signup is verified and goes to the employer area', async ({ client, assert }) => {
     await withEnv(OFF, async () => {
-      const res = await client.post('/employers/register')
-        .form({ fullName: 'Owner Two', email: 'owner2@acme.example', password: 'longpassword1', passwordConfirmation: 'longpassword1', companyName: 'Acme Two', acceptTerms: 'on' })
-        .withCsrfToken().redirects(0)
-      assert.equal(res.header('location'), '/employer')
+      const { final: res } = await signupWithOtp(client, '/employers/register', { fullName: 'Owner Two', email: 'owner2@acme.example', password: 'longpassword1', passwordConfirmation: 'longpassword1', companyName: 'Acme Two', acceptTerms: 'on' })
+      assert.equal(res!.header('location'), '/employer')
       assert.isNotNull((await User.findByOrFail('email', 'owner2@acme.example')).emailVerifiedAt)
     })
   })
@@ -87,13 +83,11 @@ test.group('EMAIL_VERIFICATION_REQUIRED off (default)', (group) => {
 test.group('EMAIL_VERIFICATION_REQUIRED=true keeps the gate', (group) => {
   group.each.setup(() => resetData())
 
-  test('signup goes to the verify notice with an unverified account', async ({ client, assert }) => {
+  test('signup still requires the email code and yields a verified account', async ({ client, assert }) => {
     await withEnv({ EMAIL_VERIFICATION_REQUIRED: 'true' }, async () => {
-      const res = await client.post('/register')
-        .form({ fullName: 'Gate Kept', email: 'gate@example.com', password: 'longpassword1', passwordConfirmation: 'longpassword1', acceptTerms: 'on' })
-        .withCsrfToken().redirects(0)
-      assert.equal(res.header('location'), '/verify-email')
-      assert.isNull((await User.findByOrFail('email', 'gate@example.com')).emailVerifiedAt)
+      const { final } = await signupWithOtp(client, '/register', { fullName: 'Gate Kept', email: 'gate@example.com', password: 'longpassword1', passwordConfirmation: 'longpassword1', acceptTerms: 'on' })
+      assert.equal(final!.header('location'), '/candidate')
+      assert.isNotNull((await User.findByOrFail('email', 'gate@example.com')).emailVerifiedAt)
     })
   })
 })

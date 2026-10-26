@@ -25,7 +25,7 @@ export async function resetData() {
     'application_notes', 'application_status_histories', 'applications', 'saved_jobs', 'saved_candidates', 'saved_searches',
     'candidate_access_logs', 'job_skills', 'jobs', 'candidate_cvs', 'candidate_skills', 'candidate_languages', 'candidate_certifications',
     'candidate_educations', 'candidate_experiences', 'candidate_profiles', 'company_verifications', 'company_users', 'companies',
-    'reports', 'audit_logs', 'notifications', 'user_tokens', 'social_accounts', 'users', 'platform_settings', 'queued_jobs',
+    'reports', 'audit_logs', 'notifications', 'user_tokens', 'social_accounts', 'users', 'platform_settings', 'queued_jobs', 'pending_signups',
   ]
   for (const t of tables) await db.from(t).delete()
   SettingsService.clearCache()
@@ -121,3 +121,14 @@ export async function tmpFile(name: string, content: Buffer | string) {
 }
 
 export const PDF_BYTES = Buffer.from('%PDF-1.4\n1 0 obj<</Type/Catalog>>endobj\ntrailer<</Root 1 0 R>>\n%%EOF\n')
+
+/** Signup through the email-OTP step: posts the form, swaps in a known code, submits it. */
+export async function signupWithOtp(client: any, path: string, form: Record<string, string>, code = '123456') {
+  const first = await client.post(path).form(form).withCsrfToken().redirects(0)
+  const token = first.session().pending_signup as string | undefined
+  if (!token) return { first, final: null, token: null }
+  const { default: hash } = await import('@adonisjs/core/services/hash')
+  await db.from('pending_signups').where('token', token).update({ code_hash: await hash.make(code) })
+  const final = await client.post('/signup/verify').form({ code }).withSession({ pending_signup: token }).withCsrfToken().redirects(0)
+  return { first, final, token }
+}

@@ -1,0 +1,6 @@
+@component('components/email_layout', { subject, appName, appUrl })
+  <p style="margin:0 0 14px;">Hi {{ name }},</p>
+  <p style="margin:0 0 16px;">Use this code to confirm your email and finish creating your {{ appName }} account:</p>
+  <p style="margin:0 0 20px;font-size:30px;font-weight:bold;letter-spacing:8px;color:#0b7a3c;">{{ code }}</p>
+  <p style="margin:0;font-size:13px;color:#5b6478;">The code expires in {{ minutes }} minutes. If you did not try to sign up, you can ignore this email.</p>
+@end

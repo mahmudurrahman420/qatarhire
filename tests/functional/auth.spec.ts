@@ -5,34 +5,81 @@ import User from '#models/user'
 import UserToken from '#models/user_token'
 import CandidateProfile from '#models/candidate_profile'
 import Company from '#models/company'
-import { makeCandidate, PASSWORD, resetData } from '#tests/helpers'
+import db from '@adonisjs/lucid/services/db'
+import { makeCandidate, PASSWORD, resetData, signupWithOtp } from '#tests/helpers'
 
 test.group('Authentication', (group) => {
   group.each.setup(() => resetData())
 
-  test('candidate registration creates an unverified account with a private profile', async ({ client, assert }) => {
-    const res = await client
-      .post('/register')
-      .form({ fullName: 'Layla Hassan', email: 'Layla@Example.com', password: 'longpassword1', passwordConfirmation: 'longpassword1', acceptTerms: 'on' })
-      .withCsrfToken()
-      .redirects(0)
-    res.assertStatus(302)
-    res.assertHeader('location', '/verify-email')
+  test('candidate signup creates no account until the email code is verified', async ({ client, assert }) => {
+    const form = { fullName: 'Layla Hassan', email: 'Layla@Example.com', password: 'longpassword1', passwordConfirmation: 'longpassword1', acceptTerms: 'on' }
+    const first = await client.post('/register').form(form).withCsrfToken().redirects(0)
+    first.assertHeader('location', '/signup/verify')
+    assert.isNull(await User.findBy('email', 'layla@example.com'), 'no user before OTP')
+    const pending = await db.from('pending_signups').where('email', 'layla@example.com').firstOrFail()
+    assert.notEqual(pending.password_hash, 'longpassword1')
+    await db.from('pending_signups').delete()
+
+    const { final } = await signupWithOtp(client, '/register', form)
+    assert.equal(final!.header('location'), '/candidate')
     const user = await User.findByOrFail('email', 'layla@example.com')
     assert.equal(user.role, 'candidate')
-    assert.isNull(user.emailVerifiedAt)
-    assert.notEqual(user.password, 'longpassword1', 'password must be hashed')
+    assert.isNotNull(user.emailVerifiedAt)
+    await User.verifyCredentials('layla@example.com', 'longpassword1')
     const profile = await CandidateProfile.findByOrFail('user_id', user.id)
     assert.equal(profile.visibility, 'private')
-    assert.isNotNull(await UserToken.query().where('user_id', user.id).where('type', 'verify_email').first())
+    assert.isNull(await db.from('pending_signups').first(), 'pending row consumed')
+  })
+
+  test('wrong codes are rejected and lock after 5 attempts', async ({ client, assert }) => {
+    const form = { fullName: 'Wrong Code', email: 'wrong@example.com', password: 'longpassword1', passwordConfirmation: 'longpassword1', acceptTerms: 'on' }
+    const first = await client.post('/register').form(form).withCsrfToken().redirects(0)
+    const token = first.session().pending_signup
+    for (let i = 0; i < 4; i++) {
+      const r = await client.post('/signup/verify').form({ code: '000000' }).withSession({ pending_signup: token }).withCsrfToken().redirects(0)
+      assert.equal(r.header('location'), '/signup/verify')
+    }
+    const last = await client.post('/signup/verify').form({ code: '000000' }).withSession({ pending_signup: token }).withCsrfToken().redirects(0)
+    assert.equal(last.header('location'), '/register')
+    assert.isNull(await User.findBy('email', 'wrong@example.com'))
+    assert.isNull(await db.from('pending_signups').where('token', token).first())
+  })
+
+  test('resend is throttled for 60 seconds', async ({ client, assert }) => {
+    const form = { fullName: 'Re Send', email: 'resend@example.com', password: 'longpassword1', passwordConfirmation: 'longpassword1', acceptTerms: 'on' }
+    const first = await client.post('/register').form(form).withCsrfToken().redirects(0)
+    const token = first.session().pending_signup
+    const before = await db.from('pending_signups').where('token', token).firstOrFail()
+    const r = await client.post('/signup/verify/resend').withSession({ pending_signup: token }).withCsrfToken().redirects(0)
+    assert.match(String(r.flashMessages().error), /wait/)
+    const after = await db.from('pending_signups').where('token', token).firstOrFail()
+    assert.equal(after.code_hash, before.code_hash)
+  })
+
+  test('expired codes are rejected', async ({ client, assert }) => {
+    const form = { fullName: 'Ex Pired', email: 'expired@example.com', password: 'longpassword1', passwordConfirmation: 'longpassword1', acceptTerms: 'on' }
+    const first = await client.post('/register').form(form).withCsrfToken().redirects(0)
+    const token = first.session().pending_signup
+    await db.from('pending_signups').where('token', token).update({ expires_at: '2000-01-01 00:00:00' })
+    await client.post('/signup/verify').form({ code: '123456' }).withSession({ pending_signup: token }).withCsrfToken().redirects(0)
+    assert.isNull(await User.findBy('email', 'expired@example.com'))
+  })
+
+  test('signup fails gracefully when email is not configured in production', async ({ client, assert }) => {
+    const saved = { NODE_ENV: process.env.NODE_ENV, MAIL_MAILER: process.env.MAIL_MAILER }
+    process.env.NODE_ENV = 'production'; process.env.MAIL_MAILER = 'log'
+    try {
+      const r = await client.post('/register').form({ fullName: 'No Mail', email: 'nomail@example.com', password: 'longpassword1', passwordConfirmation: 'longpassword1', acceptTerms: 'on' }).withCsrfToken().redirects(0)
+      assert.match(String(r.flashMessages().error), /couldn't send a verification email/)
+    } finally {
+      process.env.NODE_ENV = saved.NODE_ENV; process.env.MAIL_MAILER = saved.MAIL_MAILER
+    }
+    assert.isNull(await db.from('pending_signups').first())
+    assert.isNull(await User.findBy('email', 'nomail@example.com'))
   })
 
   test('employer registration creates a pending company with the user as owner', async ({ client, assert }) => {
-    await client
-      .post('/employers/register')
-      .form({ fullName: 'Owner One', email: 'owner@acme.example', password: 'longpassword1', passwordConfirmation: 'longpassword1', companyName: 'Acme Qatar', acceptTerms: 'on' })
-      .withCsrfToken()
-      .redirects(0)
+    await signupWithOtp(client, '/employers/register', { fullName: 'Owner One', email: 'owner@acme.example', password: 'longpassword1', passwordConfirmation: 'longpassword1', companyName: 'Acme Qatar', acceptTerms: 'on' })
     const company = await Company.query().where('name', 'Acme Qatar').preload('members').firstOrFail()
     assert.equal(company.verificationStatus, 'pending', 'companies are never auto-verified')
     assert.equal(company.members[0].role, 'owner')
@@ -40,7 +87,7 @@ test.group('Authentication', (group) => {
 
   test('registration rejects a duplicate email', async ({ client, assert }) => {
     const { user } = await makeCandidate()
-    await client.post('/register').form({ fullName: 'X Y', email: user.email, password: 'longpassword1', passwordConfirmation: 'longpassword1', acceptTerms: 'on' }).withCsrfToken().redirects(0)
+    await signupWithOtp(client, '/register', { fullName: 'X Y', email: user.email, password: 'longpassword1', passwordConfirmation: 'longpassword1', acceptTerms: 'on' })
     assert.equal(await User.query().where('email', user.email).count('* as c').then((r) => Number(r[0].$extras.c)), 1)
   })
 

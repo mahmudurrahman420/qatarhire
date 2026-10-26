@@ -14,7 +14,7 @@ export default function RegisterCandidate({ socialProviders = [] }: { socialProv
       <div className="mb-5"><SocialButtons providers={socialProviders} intent="candidate" /></div>
       <form className="flex flex-col gap-4" onSubmit={(e) => { e.preventDefault(); form.post('/register', { onFinish: () => form.reset('password', 'passwordConfirmation') }) }}>
         <TextField label="Full name" autoComplete="name" value={form.data.fullName} onChange={(e) => form.setData('fullName', e.target.value)} error={form.errors.fullName} required />
-        <TextField label="Email" type="email" autoComplete="email" value={form.data.email} onChange={(e) => form.setData('email', e.target.value)} error={form.errors.email} required hint="We'll send a link to confirm it." />
+        <TextField label="Email" type="email" autoComplete="email" value={form.data.email} onChange={(e) => form.setData('email', e.target.value)} error={form.errors.email} required hint="We'll email you a 6-digit code to confirm it." />
         <TextField label="Password" type="password" autoComplete="new-password" minLength={10} value={form.data.password} onChange={(e) => form.setData('password', e.target.value)} error={form.errors.password} required hint="At least 10 characters." />
         <TextField label="Confirm password" type="password" autoComplete="new-password" value={form.data.passwordConfirmation} onChange={(e) => form.setData('passwordConfirmation', e.target.value)} error={form.errors.passwordConfirmation} required />
         <Checkbox
